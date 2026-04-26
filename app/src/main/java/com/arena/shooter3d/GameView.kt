@@ -36,6 +36,7 @@ class GameView(
             SoundEvent.WAVE_START -> soundManager.play(7)
             SoundEvent.GAME_OVER -> soundManager.play(8)
             SoundEvent.WEAPON_SWITCH -> soundManager.play(9)
+            SoundEvent.HEADSHOT -> soundManager.play(10)
         }
     }
 

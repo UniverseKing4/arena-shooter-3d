@@ -50,6 +50,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         drawCrosshair(canvas, w, h)
         drawJoystick(canvas)
         drawFireButton(canvas, w, h, hs)
+        drawJumpButton(canvas, w, h)
         drawWeaponSwitch(canvas, w, h, hs)
         drawPauseBtn(canvas, w)
         drawHealthBar(canvas, w, h, hs)
@@ -58,6 +59,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         drawCombo(canvas, w, hs)
         drawWave(canvas, w, hs)
         drawMinimap(canvas, w, hs)
+        if (hs.isSprinting) drawSprintIndicator(canvas, w, h)
     }
 
     private fun drawCrosshair(canvas: Canvas, w: Float, h: Float) {
@@ -142,7 +144,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawHealthBar(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
-        val barW = 200f; val barH = 16f; val x = 30f; val y = h - 48f
+        val barW = 280f; val barH = 22f; val x = 30f; val y = h - 55f
         val dmgShake = if (hs.damageFlash > 0.1f) (sin(hs.damageFlash * 40f) * hs.damageFlash * 6f) else 0f
         val sx = x + dmgShake
         if (hs.damageFlash > 0.3f) {
@@ -158,26 +160,26 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             p.color = Color.argb((pulse * 80).toInt(), 255, 23, 68)
             canvas.drawRoundRect(sx + 2, y + 2, sx + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
         }
-        tp.textSize = 24f; tp.color = Color.WHITE
-        canvas.drawText("${hs.health}", sx + barW + 10, y + barH - 1, tp)
-        tp.textSize = 18f; tp.color = 0xFFB0BEC5.toInt(); canvas.drawText("HP", sx, y - 5, tp)
+        tp.textSize = 30f; tp.color = Color.WHITE
+        canvas.drawText("${hs.health}", sx + barW + 12, y + barH - 1, tp)
+        tp.textSize = 22f; tp.color = 0xFFB0BEC5.toInt(); canvas.drawText("HP", sx, y - 6, tp)
     }
 
     private fun drawAmmo(canvas: Canvas, h: Float, hs: HUDState) {
-        tp.textSize = 32f; tp.color = Color.WHITE
-        canvas.drawText(if (hs.ammo == -1) "INF" else "${hs.ammo}", 30f, h - 105f, tp)
-        tp.textSize = 18f; tp.color = 0xFF00E5FF.toInt()
-        canvas.drawText(hs.weaponName, 30f, h - 78f, tp)
+        tp.textSize = 40f; tp.color = Color.WHITE
+        canvas.drawText(if (hs.ammo == -1) "INF" else "${hs.ammo}", 30f, h - 120f, tp)
+        tp.textSize = 22f; tp.color = 0xFF00E5FF.toInt()
+        canvas.drawText(hs.weaponName, 30f, h - 88f, tp)
     }
 
     private fun drawScore(canvas: Canvas, w: Float, hs: HUDState) {
-        val rx = w - 18f; val top = 95f
+        val rx = w - 18f; val top = 120f
         p.color = 0x44000000.toInt()
-        canvas.drawRoundRect(rx - 130f, top - 18f, rx + 5f, top + 50f, 6f, 6f, p)
-        scoreP.textSize = 22f; scoreP.color = 0xFFB0BEC5.toInt()
+        canvas.drawRoundRect(rx - 140f, top - 20f, rx + 5f, top + 55f, 6f, 6f, p)
+        scoreP.textSize = 26f; scoreP.color = 0xFFB0BEC5.toInt()
         canvas.drawText("SCORE", rx, top, scoreP)
-        scoreP.textSize = 36f; scoreP.color = Color.WHITE
-        canvas.drawText("${hs.score}", rx, top + 38f, scoreP)
+        scoreP.textSize = 40f; scoreP.color = Color.WHITE
+        canvas.drawText("${hs.score}", rx, top + 42f, scoreP)
     }
 
     private fun drawCombo(canvas: Canvas, w: Float, hs: HUDState) {
@@ -185,14 +187,14 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             val a = ((hs.comboTimer / 3f) * 255).toInt().coerceIn(0, 255)
             comboP.color = Color.argb(a, 255, 193, 7)
             comboP.textSize = 28f + hs.combo.coerceAtMost(10) * 2f
-            canvas.drawText("x${hs.combo}", w - 18f, 165f, comboP)
+            canvas.drawText("x${hs.combo}", w - 18f, 195f, comboP)
         }
     }
 
     private fun drawWave(canvas: Canvas, w: Float, hs: HUDState) {
-        waveP.textSize = 26f; canvas.drawText("WAVE ${hs.wave}", w / 2, 32f, waveP)
-        tp.textSize = 17f; tp.color = 0xFFB0BEC5.toInt(); tp.textAlign = Paint.Align.CENTER
-        canvas.drawText("${hs.enemyCount} ENEMIES", w / 2, 54f, tp); tp.textAlign = Paint.Align.LEFT
+        waveP.textSize = 34f; canvas.drawText("WAVE ${hs.wave}", w / 2, 38f, waveP)
+        tp.textSize = 22f; tp.color = 0xFFB0BEC5.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("${hs.enemyCount} ENEMIES", w / 2, 64f, tp); tp.textAlign = Paint.Align.LEFT
     }
 
     private fun drawMinimap(canvas: Canvas, w: Float, hs: HUDState) {
@@ -216,6 +218,27 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = 0xFF00E5FF.toInt(); canvas.drawCircle(mcx, mcy, 5.5f, p)
         val dl = 12f; val dx = sin(hs.playerYaw) * dl; val dy = -cos(hs.playerYaw) * dl
         p.strokeWidth = 3f; canvas.drawLine(mcx, mcy, mcx + dx, mcy + dy, p); p.strokeWidth = 1f
+    }
+
+    private fun drawJumpButton(canvas: Canvas, w: Float, h: Float) {
+        val bx = ic().jumpBtnX; val by = ic().jumpBtnY; val br = ic().jumpBtnRadius
+        p.color = 0x3300E5FF.toInt(); canvas.drawCircle(bx, by, br, p)
+        p.color = 0x6600E5FF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 4f
+        canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
+        p.color = 0xCCFFFFFF.toInt()
+        val path = android.graphics.Path()
+        path.moveTo(bx, by - 22f)
+        path.lineTo(bx - 16f, by + 8f)
+        path.lineTo(bx + 16f, by + 8f)
+        path.close()
+        canvas.drawPath(path, p)
+        tp.textSize = 16f; tp.color = 0xAAFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("JUMP", bx, by + 26f, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawSprintIndicator(canvas: Canvas, w: Float, h: Float) {
+        tp.textSize = 22f; tp.color = 0xFFFFC107.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("SPRINT", w / 2, h - 30f, tp); tp.textAlign = Paint.Align.LEFT
     }
 
     private fun drawPauseOverlay(canvas: Canvas, w: Float, h: Float) {
@@ -244,7 +267,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         subP.color = Color.WHITE; subP.textSize = 36f
         canvas.drawText("SCORE: ${hs.score}", w / 2, h * 0.45f, subP)
         subP.textSize = 26f; subP.color = 0xFF00E5FF.toInt()
-        canvas.drawText("WAVE ${hs.wave}  |  ${hs.kills} KILLS", w / 2, h * 0.55f, subP)
+        canvas.drawText("WAVE ${hs.wave}  |  ${hs.kills} KILLS  |  ${hs.headshots} HEADSHOTS", w / 2, h * 0.55f, subP)
         if (hs.score >= hs.highScore && hs.score > 0) {
             subP.color = 0xFFFFC107.toInt(); canvas.drawText("NEW HIGH SCORE!", w / 2, h * 0.64f, subP)
         }

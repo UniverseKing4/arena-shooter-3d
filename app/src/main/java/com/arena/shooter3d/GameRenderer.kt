@@ -70,9 +70,9 @@ class GameRenderer(
         val p = engine.player; val shake = p.screenShake
         val sx = if (shake > 0) (Math.random().toFloat() - 0.5f) * shake * 0.4f else 0f
         val sy = if (shake > 0) (Math.random().toFloat() - 0.5f) * shake * 0.25f else 0f
-        val fwd = p.forward()
-        Matrix.setLookAtM(view, 0, p.position.x + sx, p.eyeY + sy, p.position.z,
-            p.position.x + fwd.x, p.eyeY + fwd.y, p.position.z + fwd.z, 0f, 1f, 0f)
+        val fwd = p.forward(); val eyeY = p.eyeY
+        Matrix.setLookAtM(view, 0, p.position.x + sx, eyeY + sy, p.position.z,
+            p.position.x + fwd.x, eyeY + fwd.y, p.position.z + fwd.z, 0f, 1f, 0f)
         Matrix.multiplyMM(vp, 0, proj, 0, view, 0)
 
         useScene(); GLES20.glUniform3f(uLightDir, 0.4f, 0.9f, 0.3f)

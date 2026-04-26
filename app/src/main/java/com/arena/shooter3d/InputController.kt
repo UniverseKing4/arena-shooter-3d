@@ -12,6 +12,8 @@ class InputController {
     var isFiring = false
     var weaponSwitchTapped = false
     var pauseTapped = false
+    var jumpTapped = false
+    var isSprinting = false
 
     private var movePointerId = -1
     private var lookPointerId = -1
@@ -25,16 +27,21 @@ class InputController {
     var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 155f
     var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 65f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
+    var jumpBtnX = 0f; var jumpBtnY = 0f; val jumpBtnRadius = 75f
     val joyOuterRadius = 120f; val joyInnerRadius = 45f
 
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
         fireBtnX = screenW - 480f; fireBtnY = screenH - 340f
         switchBtnX = fireBtnX - 100f; switchBtnY = screenH - 120f
+        jumpBtnX = fireBtnX + 200f; jumpBtnY = fireBtnY - 200f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
 
     fun onTouchDown(pointerId: Int, x: Float, y: Float) {
+        if (inCircle(x, y, jumpBtnX, jumpBtnY, jumpBtnRadius + 12f)) {
+            jumpTapped = true; return
+        }
         if (inCircle(x, y, fireBtnX, fireBtnY, fireBtnRadius + 18f)) {
             firePointerId = pointerId; isFiring = true; lastFireX = x; lastFireY = y; return
         }
@@ -67,6 +74,7 @@ class InputController {
                     joyX = dx / joyOuterRadius; joyY = dy / joyOuterRadius
                     joyThumbX = x; joyThumbY = y
                 }
+                isSprinting = joyY < -0.8f
             }
             lookPointerId -> {
                 lookDeltaX += (x - lastLookX) * lookSensitivity
@@ -83,7 +91,7 @@ class InputController {
 
     fun onTouchUp(pointerId: Int) {
         when (pointerId) {
-            movePointerId -> { movePointerId = -1; joyX = 0f; joyY = 0f; joyActive = false }
+            movePointerId -> { movePointerId = -1; joyX = 0f; joyY = 0f; joyActive = false; isSprinting = false }
             lookPointerId -> { lookPointerId = -1; lookDeltaX = 0f; lookDeltaY = 0f }
             firePointerId -> { firePointerId = -1; isFiring = false }
         }
@@ -95,6 +103,7 @@ class InputController {
     }
     fun consumeWeaponSwitch(): Boolean { val t = weaponSwitchTapped; weaponSwitchTapped = false; return t }
     fun consumePause(): Boolean { val t = pauseTapped; pauseTapped = false; return t }
+    fun consumeJump(): Boolean { val t = jumpTapped; jumpTapped = false; return t }
 
     private fun inCircle(x: Float, y: Float, cx: Float, cy: Float, r: Float): Boolean {
         val dx = x - cx; val dy = y - cy; return dx * dx + dy * dy < r * r

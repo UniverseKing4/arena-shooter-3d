@@ -9,20 +9,24 @@ class GameEngine {
     val projectiles = mutableListOf<Projectile>()
     val pickups = mutableListOf<Pickup>()
     val particles = mutableListOf<Particle>()
+    val floatingTexts = mutableListOf<FloatingText>()
     val arena = Arena()
     var gameState = GameState.MENU
     var score = 0; var highScore = 0; var wave = 0
     var combo = 0; var comboTimer = 0f
     private var waveDelay = 0f
     private val moveSpeed = 6.5f
+    private val sprintMultiplier = 1.7f
     private val rng = Random
     val soundEvents = mutableListOf<SoundEvent>()
     var isMoving = false
+    var isSprinting = false
+    var headshots = 0
 
     fun startGame() {
-        player.reset(); enemies.clear(); projectiles.clear(); particles.clear()
-        score = 0; wave = 0; combo = 0; comboTimer = 0f; waveDelay = 1.5f
-        gameState = GameState.PLAYING; isMoving = false
+        player.reset(); enemies.clear(); projectiles.clear(); particles.clear(); floatingTexts.clear()
+        score = 0; wave = 0; combo = 0; comboTimer = 0f; waveDelay = 1.5f; headshots = 0
+        gameState = GameState.PLAYING; isMoving = false; isSprinting = false
         pickups.clear()
         for ((i, spot) in arena.pickupSpots.withIndex())
             pickups.add(Pickup(spot.copy(), if (i % 2 == 0) PickupType.HEALTH else PickupType.AMMO))
@@ -46,6 +50,7 @@ class GameEngine {
         updateEnemies(cdt)
         updatePickups(cdt)
         updateParticles(cdt)
+        updateFloatingTexts(cdt)
         updateWaves(cdt)
         updateCombo(cdt)
 
@@ -68,13 +73,26 @@ class GameEngine {
             soundEvents.add(SoundEvent.WEAPON_SWITCH)
         }
 
+        if (input.consumeJump() && player.isGrounded) {
+            player.velocityY = 7.5f; player.isGrounded = false
+        }
+
+        player.velocityY -= 22f * dt
+        player.position.y += player.velocityY * dt
+        if (player.position.y <= 0f) {
+            player.position.y = 0f; player.velocityY = 0f; player.isGrounded = true
+        }
+
+        isSprinting = input.isSprinting
+        val speed = if (isSprinting) moveSpeed * sprintMultiplier else moveSpeed
+
         val fwd = player.flatForward(); val rgt = player.right()
         var mx = fwd.x * (-input.joyY) + rgt.x * input.joyX
         var mz = fwd.z * (-input.joyY) + rgt.z * input.joyX
         val ml = sqrt(mx * mx + mz * mz)
         isMoving = ml > 0.1f
         if (ml > 0.01f) {
-            mx = mx / ml * moveSpeed * dt; mz = mz / ml * moveSpeed * dt
+            mx = mx / ml * speed * dt; mz = mz / ml * speed * dt
             player.position.x += mx; player.position.z += mz
             resolvePlayerWallCollision()
         }
@@ -164,16 +182,36 @@ class GameEngine {
             if (!hit) {
                 for (e in enemies) {
                     if (e.state == EnemyState.DYING) continue
-                    val ey = e.type.size * 0.7f
+                    val s = e.type.size
+
+                    val headY = s * 1.05f
+                    val headR = s * 0.28f + p.size
+                    val hdx = nx - e.position.x; val hdy = ny - headY; val hdz = nz - e.position.z
+                    val headDistSq = hdx * hdx + hdy * hdy + hdz * hdz
+                    val isHeadshot = headDistSq < headR * headR
+
+                    val ey = s * 0.7f
                     val dx = nx - e.position.x; val dy = ny - ey; val dz = nz - e.position.z
-                    val r = e.type.size * 0.55f + p.size
-                    if (dx * dx + dy * dy + dz * dz < r * r) {
-                        e.health -= p.damage; e.hitFlash = 0.15f
+                    val r = s * 0.55f + p.size
+                    val bodyHit = dx * dx + dy * dy + dz * dz < r * r
+
+                    if (isHeadshot || bodyHit) {
+                        val dmg = if (isHeadshot) (p.damage * 2.5f).toInt() else p.damage
+                        e.health -= dmg; e.hitFlash = 0.15f
                         e.state = EnemyState.STAGGER; e.stateTimer = 0.18f
-                        hit = true; soundEvents.add(SoundEvent.HIT_ENEMY)
-                        spawnBurst(nx, ny, nz, 0.8f, 0.15f, 0.1f, 5)
+                        hit = true
+                        if (isHeadshot) {
+                            soundEvents.add(SoundEvent.HEADSHOT)
+                            headshots++
+                            spawnBurst(nx, ny, nz, 1f, 0.85f, 0.15f, 12)
+                            floatingTexts.add(FloatingText(e.position.x, s * 1.5f, e.position.z, "HEADSHOT!", 1.2f, 1f, 0.85f, 0.15f))
+                        } else {
+                            soundEvents.add(SoundEvent.HIT_ENEMY)
+                            spawnBurst(nx, ny, nz, 0.8f, 0.15f, 0.1f, 5)
+                        }
                         if (e.health <= 0) {
                             e.state = EnemyState.DYING; e.deathTimer = 1.2f
+                            e.hitFlash = 0.35f
                             addScore(e.type.scoreValue); player.kills++
                             soundEvents.add(SoundEvent.KILL_ENEMY)
                             spawnBurst(e.position.x, ey, e.position.z, e.type.bodyR, e.type.bodyG, e.type.bodyB, 18)
@@ -220,9 +258,27 @@ class GameEngine {
                         } else if (e.type == EnemyType.BRUTE && dist < 6f) {
                             spd *= 1.5f
                         }
+
+                        val lookAhead = spd * 0.4f
+                        val probeX = e.position.x + mx * lookAhead
+                        val probeZ = e.position.z + mz * lookAhead
+                        val er = e.type.size * 0.5f
+                        var blocked = false
+                        for (w in arena.walls) {
+                            val clx = probeX.coerceIn(w.minX, w.maxX)
+                            val clz = probeZ.coerceIn(w.minZ, w.maxZ)
+                            val pdx = probeX - clx; val pdz = probeZ - clz
+                            if (pdx * pdx + pdz * pdz < er * er * 1.5f) { blocked = true; break }
+                        }
+                        if (blocked) {
+                            val perpX = -dir.z * e.strafeDir; val perpZ = dir.x * e.strafeDir
+                            mx = dir.x * 0.3f + perpX * 0.7f; mz = dir.z * 0.3f + perpZ * 0.7f
+                            val ml2 = sqrt(mx * mx + mz * mz)
+                            if (ml2 > 0.01f) { mx /= ml2; mz /= ml2 }
+                        }
+
                         var nx = e.position.x + mx * spd * dt
                         var nz = e.position.z + mz * spd * dt
-                        val er = e.type.size * 0.5f
                         for (pass in 0 until 3) {
                             for (w in arena.walls) {
                                 val clx = nx.coerceIn(w.minX, w.maxX)
@@ -295,6 +351,14 @@ class GameEngine {
             val p = iter.next(); p.life -= dt
             if (!p.alive) { iter.remove(); continue }
             p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vy -= 8f * dt * 0.3f
+        }
+    }
+
+    private fun updateFloatingTexts(dt: Float) {
+        val iter = floatingTexts.iterator()
+        while (iter.hasNext()) {
+            val ft = iter.next(); ft.timer -= dt; ft.y += dt * 1.5f
+            if (ft.timer <= 0f) iter.remove()
         }
     }
 
@@ -387,6 +451,7 @@ class GameEngine {
             score, highScore, wave, combo, comboTimer, player.damageFlash, gameState,
             enemies.count { it.state != EnemyState.DYING },
             player.position.x, player.position.z, player.yaw,
-            ep, pp, arena.half, player.kills, emptyList())
+            ep, pp, arena.half, player.kills, emptyList(),
+            isSprinting, headshots)
     }
 }

@@ -21,7 +21,7 @@ enum class EnemyState { CHASE, ATTACK, STAGGER, DYING }
 
 enum class SoundEvent {
     SHOOT_PISTOL, SHOOT_SHOTGUN, SHOOT_RIFLE,
-    HIT_ENEMY, KILL_ENEMY,
+    HIT_ENEMY, KILL_ENEMY, HEADSHOT,
     PICKUP_HEALTH, PICKUP_AMMO,
     PLAYER_HURT, WAVE_START, GAME_OVER,
     WEAPON_SWITCH
@@ -71,6 +71,7 @@ class Player {
     var position = Vec3(0f, 0f, 0f)
     var yaw = 0f; var pitch = 0f
     var health = 100; val maxHealth = 100
+    var velocityY = 0f; var isGrounded = true
     val weapons = arrayOf(
         Weapon("PISTOL", 22, 0.35f, -1, 0.015f, 38f, 1, 1f, 1f, 0.4f),
         Weapon("SHOTGUN", 15, 0.75f, 24, 0.1f, 30f, 5, 1f, 0.7f, 0.25f),
@@ -89,7 +90,7 @@ class Player {
     var muzzleFlash = 0f
 
     val weapon get() = weapons[currentWeapon]
-    val eyeY get() = 1.6f
+    val eyeY get() = 1.6f + position.y
 
     fun forward(): Vec3 {
         val cp = cos(pitch)
@@ -104,6 +105,7 @@ class Player {
         fireCooldown = 0f; damageFlash = 0f; screenShake = 0f; kills = 0
         gunRecoil = 0f; gunSwapProgress = 0f; gunBobPhase = 0f
         swapPhase = 0; pendingWeapon = -1; muzzleFlash = 0f
+        velocityY = 0f; isGrounded = true
     }
 
     companion object {
@@ -156,6 +158,8 @@ class Particle(
 }
 
 data class Wall(val minX: Float, val minZ: Float, val maxX: Float, val maxZ: Float, val height: Float = 3.5f)
+
+data class FloatingText(var x: Float, var y: Float, var z: Float, val text: String, var timer: Float, val r: Float, val g: Float, val b: Float)
 
 class Arena {
     val size = 70f; val half = size / 2f
@@ -222,5 +226,7 @@ data class HUDState(
     val enemyPositions: List<Pair<Float, Float>>,
     val pickupPositions: List<Triple<Float, Float, Int>>,
     val arenaHalf: Float, val kills: Int,
-    val soundEvents: List<SoundEvent>
+    val soundEvents: List<SoundEvent>,
+    val isSprinting: Boolean = false,
+    val headshots: Int = 0
 )
