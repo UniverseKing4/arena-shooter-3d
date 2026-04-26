@@ -32,11 +32,11 @@ enum class EnemyType(
     val size: Float, val bodyR: Float, val bodyG: Float, val bodyB: Float,
     val headR: Float, val headG: Float, val headB: Float, val scoreValue: Int
 ) {
-    WALKER(35, 3.5f, 8, 2f, 0.55f,
+    WALKER(35, 3.5f, 8, 2.2f, 1.0f,
         0.3f, 0.5f, 0.22f, 0.35f, 0.55f, 0.28f, 100),
-    RUNNER(55, 6f, 12, 2.2f, 0.5f,
+    RUNNER(55, 6f, 12, 2.4f, 0.9f,
         0.55f, 0.22f, 0.18f, 0.6f, 0.28f, 0.22f, 200),
-    BRUTE(130, 2.2f, 22, 3f, 0.95f,
+    BRUTE(130, 2.2f, 22, 3.5f, 1.5f,
         0.38f, 0.28f, 0.42f, 0.48f, 0.38f, 0.52f, 500)
 }
 
@@ -155,7 +155,7 @@ class Particle(
 data class Wall(val minX: Float, val minZ: Float, val maxX: Float, val maxZ: Float, val height: Float = 3.5f)
 
 class Arena {
-    val size = 44f; val half = size / 2f
+    val size = 70f; val half = size / 2f
     val walls = mutableListOf<Wall>()
     val outerWallCount: Int
     val pillarEndIndex: Int
@@ -170,33 +170,40 @@ class Arena {
         walls.add(Wall(half - w, -half, half, half))
         outerWallCount = walls.size
 
-        val ps = 0.8f
+        val ps = 0.9f
         for (pos in listOf(
-            Vec3(-9f, 0f, -9f), Vec3(9f, 0f, -9f), Vec3(-9f, 0f, 9f), Vec3(9f, 0f, 9f),
+            Vec3(-14f, 0f, -14f), Vec3(14f, 0f, -14f), Vec3(-14f, 0f, 14f), Vec3(14f, 0f, 14f),
             Vec3(0f, 0f, 0f),
-            Vec3(-15f, 0f, 0f), Vec3(15f, 0f, 0f), Vec3(0f, 0f, -15f), Vec3(0f, 0f, 15f)
+            Vec3(-24f, 0f, 0f), Vec3(24f, 0f, 0f), Vec3(0f, 0f, -24f), Vec3(0f, 0f, 24f),
+            Vec3(-10f, 0f, 24f), Vec3(10f, 0f, -24f),
+            Vec3(-24f, 0f, 14f), Vec3(24f, 0f, -14f),
+            Vec3(-7f, 0f, -7f), Vec3(7f, 0f, 7f)
         )) { walls.add(Wall(pos.x - ps, pos.z - ps, pos.x + ps, pos.z + ps, 4.5f)) }
         pillarEndIndex = walls.size
 
         for (pos in listOf(
-            Vec3(-5f, 0f, -4f), Vec3(5f, 0f, 4f),
-            Vec3(-13f, 0f, 11f), Vec3(13f, 0f, -11f),
-            Vec3(-4f, 0f, 13f), Vec3(4f, 0f, -13f),
-            Vec3(10f, 0f, 10f), Vec3(-10f, 0f, -10f)
-        )) { walls.add(Wall(pos.x - 1.2f, pos.z - 0.4f, pos.x + 1.2f, pos.z + 0.4f, 1.3f)) }
+            Vec3(-8f, 0f, -6f), Vec3(8f, 0f, 6f),
+            Vec3(-20f, 0f, 17f), Vec3(20f, 0f, -17f),
+            Vec3(-6f, 0f, 20f), Vec3(6f, 0f, -20f),
+            Vec3(16f, 0f, 16f), Vec3(-16f, 0f, -16f),
+            Vec3(-18f, 0f, -8f), Vec3(18f, 0f, 8f),
+            Vec3(0f, 0f, -12f), Vec3(0f, 0f, 12f)
+        )) { walls.add(Wall(pos.x - 1.4f, pos.z - 0.5f, pos.x + 1.4f, pos.z + 0.5f, 1.3f)) }
 
         pickupSpots.addAll(listOf(
-            Vec3(-16f, 0.5f, -16f), Vec3(16f, 0.5f, -16f),
-            Vec3(-16f, 0.5f, 16f), Vec3(16f, 0.5f, 16f),
-            Vec3(0f, 0.5f, -11f), Vec3(0f, 0.5f, 11f),
-            Vec3(-11f, 0.5f, 0f), Vec3(11f, 0.5f, 0f)
+            Vec3(-24f, 0.5f, -24f), Vec3(24f, 0.5f, -24f),
+            Vec3(-24f, 0.5f, 24f), Vec3(24f, 0.5f, 24f),
+            Vec3(0f, 0.5f, -17f), Vec3(0f, 0.5f, 17f),
+            Vec3(-17f, 0.5f, 0f), Vec3(17f, 0.5f, 0f),
+            Vec3(-12f, 0.5f, 12f), Vec3(12f, 0.5f, -12f)
         ))
         spawnPoints.addAll(listOf(
-            Vec3(-18f, 0f, -18f), Vec3(18f, 0f, -18f),
-            Vec3(-18f, 0f, 18f), Vec3(18f, 0f, 18f),
-            Vec3(-18f, 0f, 0f), Vec3(18f, 0f, 0f),
-            Vec3(0f, 0f, -18f), Vec3(0f, 0f, 18f),
-            Vec3(-12f, 0f, -18f), Vec3(12f, 0f, 18f)
+            Vec3(-30f, 0f, -30f), Vec3(30f, 0f, -30f),
+            Vec3(-30f, 0f, 30f), Vec3(30f, 0f, 30f),
+            Vec3(-30f, 0f, 0f), Vec3(30f, 0f, 0f),
+            Vec3(0f, 0f, -30f), Vec3(0f, 0f, 30f),
+            Vec3(-18f, 0f, -30f), Vec3(18f, 0f, 30f),
+            Vec3(-30f, 0f, 18f), Vec3(30f, 0f, -18f)
         ))
     }
 }

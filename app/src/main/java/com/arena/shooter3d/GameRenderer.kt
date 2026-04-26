@@ -52,7 +52,7 @@ class GameRenderer(
 
     override fun onSurfaceChanged(gl: GL10?, w: Int, h: Int) {
         screenW = w; screenH = h; GLES20.glViewport(0, 0, w, h)
-        Matrix.perspectiveM(proj, 0, 70f, w.toFloat() / h, 0.1f, 100f)
+        Matrix.perspectiveM(proj, 0, 70f, w.toFloat() / h, 0.1f, 150f)
         input.setScreenSize(w, h)
     }
 
@@ -124,8 +124,8 @@ class GameRenderer(
 
             // Body
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x, s * 0.7f + bob, e.position.z)
-            Matrix.scaleM(model, 0, s * 0.55f, s * 0.8f, s * 0.4f)
+            Matrix.translateM(model, 0, e.position.x, s * 0.55f + bob, e.position.z)
+            Matrix.scaleM(model, 0, s * 0.5f, s * 0.7f, s * 0.35f)
             setMats()
             if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
             else GLES20.glUniform3f(uColor, e.type.bodyR, e.type.bodyG, e.type.bodyB)
@@ -133,8 +133,8 @@ class GameRenderer(
 
             // Head
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x, s * 1.35f + bob, e.position.z)
-            Matrix.scaleM(model, 0, s * 0.35f, s * 0.35f, s * 0.35f)
+            Matrix.translateM(model, 0, e.position.x, s * 1.15f + bob, e.position.z)
+            Matrix.scaleM(model, 0, s * 0.3f, s * 0.3f, s * 0.3f)
             setMats()
             if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
             else GLES20.glUniform3f(uColor, e.type.headR, e.type.headG, e.type.headB)
@@ -143,18 +143,18 @@ class GameRenderer(
             // Left arm
             val armSwing = sin(e.bobPhase * 1.5f) * 12f
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x - s * 0.4f, s * 0.65f + bob, e.position.z - s * 0.15f)
+            Matrix.translateM(model, 0, e.position.x - s * 0.38f, s * 0.85f + bob, e.position.z - s * 0.1f)
             Matrix.rotateM(model, 0, -30f + armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.15f, s * 0.55f, s * 0.15f)
+            Matrix.scaleM(model, 0, s * 0.13f, s * 0.5f, s * 0.13f)
             setMats()
             if (!flash) GLES20.glUniform3f(uColor, e.type.bodyR * 0.85f, e.type.bodyG * 0.85f, e.type.bodyB * 0.85f)
             bindDraw(cubeVerts, cubeVC, 6)
 
             // Right arm
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x + s * 0.4f, s * 0.65f + bob, e.position.z - s * 0.15f)
+            Matrix.translateM(model, 0, e.position.x + s * 0.38f, s * 0.85f + bob, e.position.z - s * 0.1f)
             Matrix.rotateM(model, 0, -30f - armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.15f, s * 0.55f, s * 0.15f)
+            Matrix.scaleM(model, 0, s * 0.13f, s * 0.5f, s * 0.13f)
             setMats()
             bindDraw(cubeVerts, cubeVC, 6)
 
@@ -254,14 +254,14 @@ class GameRenderer(
         GLES20.glUseProgram(hudProgram); GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         val o = FloatArray(16); Matrix.orthoM(o, 0, 0f, screenW.toFloat(), screenH.toFloat(), 0f, -1f, 1f)
-        GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0); GLES20.glUniform4f(huColor, 1f, 1f, 1f, 0.75f)
-        val cx = screenW / 2f; val cy = screenH / 2f; val g = 5f; val s = 12f; val t = 1.2f
+        GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0); GLES20.glUniform4f(huColor, 1f, 1f, 1f, 0.85f)
+        val cx = screenW / 2f; val cy = screenH / 2f; val g = 8f; val s = 20f; val t = 2f
         val d = floatArrayOf(
             cx-s,cy-t,cx-g,cy-t,cx-g,cy+t, cx-s,cy-t,cx-g,cy+t,cx-s,cy+t,
             cx+g,cy-t,cx+s,cy-t,cx+s,cy+t, cx+g,cy-t,cx+s,cy+t,cx+g,cy+t,
             cx-t,cy-s,cx+t,cy-s,cx+t,cy-g, cx-t,cy-s,cx+t,cy-g,cx-t,cy-g,
             cx-t,cy+g,cx+t,cy+g,cx+t,cy+s, cx-t,cy+g,cx+t,cy+s,cx-t,cy+s,
-            cx-1.5f,cy-1.5f,cx+1.5f,cy-1.5f,cx+1.5f,cy+1.5f, cx-1.5f,cy-1.5f,cx+1.5f,cy+1.5f,cx-1.5f,cy+1.5f)
+            cx-2.5f,cy-2.5f,cx+2.5f,cy-2.5f,cx+2.5f,cy+2.5f, cx-2.5f,cy-2.5f,cx+2.5f,cy+2.5f,cx-2.5f,cy+2.5f)
         val buf = fbuf(d); GLES20.glEnableVertexAttribArray(haPos)
         GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, buf)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, d.size / 2)

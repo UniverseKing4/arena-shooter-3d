@@ -17,25 +17,26 @@ class InputController {
     private var lookPointerId = -1
     private var firePointerId = -1
     private var lastLookX = 0f; private var lastLookY = 0f
+    private var lastFireX = 0f; private var lastFireY = 0f
 
     private var screenW = 1f; private var screenH = 1f
     private val lookSensitivity = 0.005f
 
-    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 62f
+    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 82f
     var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 40f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
-    val joyOuterRadius = 75f; val joyInnerRadius = 28f
+    val joyOuterRadius = 100f; val joyInnerRadius = 38f
 
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
-        fireBtnX = screenW - 175f; fireBtnY = screenH - 150f
-        switchBtnX = screenW - 175f; switchBtnY = screenH - 290f
+        fireBtnX = screenW - 260f; fireBtnY = screenH - 200f
+        switchBtnX = screenW - 260f; switchBtnY = screenH - 350f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
 
     fun onTouchDown(pointerId: Int, x: Float, y: Float) {
         if (inCircle(x, y, fireBtnX, fireBtnY, fireBtnRadius + 18f)) {
-            firePointerId = pointerId; isFiring = true; return
+            firePointerId = pointerId; isFiring = true; lastFireX = x; lastFireY = y; return
         }
         if (inCircle(x, y, switchBtnX, switchBtnY, switchBtnRadius + 12f)) {
             weaponSwitchTapped = true; return
@@ -71,6 +72,11 @@ class InputController {
                 lookDeltaX += (x - lastLookX) * lookSensitivity
                 lookDeltaY += (y - lastLookY) * lookSensitivity
                 lastLookX = x; lastLookY = y
+            }
+            firePointerId -> {
+                lookDeltaX += (x - lastFireX) * lookSensitivity
+                lookDeltaY += (y - lastFireY) * lookSensitivity
+                lastFireX = x; lastFireY = y
             }
         }
     }

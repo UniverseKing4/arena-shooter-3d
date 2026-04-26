@@ -164,9 +164,9 @@ class GameEngine {
             if (!hit) {
                 for (e in enemies) {
                     if (e.state == EnemyState.DYING) continue
-                    val ey = e.type.size
+                    val ey = e.type.size * 0.7f
                     val dx = nx - e.position.x; val dy = ny - ey; val dz = nz - e.position.z
-                    val r = e.type.size * 0.65f + p.size
+                    val r = e.type.size * 0.55f + p.size
                     if (dx * dx + dy * dy + dz * dz < r * r) {
                         e.health -= p.damage; e.hitFlash = 0.15f
                         e.state = EnemyState.STAGGER; e.stateTimer = 0.18f
@@ -206,13 +206,15 @@ class GameEngine {
                         val dir = toPlayer.normalized()
                         var nx = e.position.x + dir.x * e.type.speed * dt
                         var nz = e.position.z + dir.z * e.type.speed * dt
-                        for (w in arena.walls) {
-                            val hs = e.type.size * 0.5f
-                            if (nx + hs > w.minX && nx - hs < w.maxX && nz + hs > w.minZ && nz - hs < w.maxZ) {
-                                val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
-                                val hw = (w.maxX - w.minX) / 2f + hs; val hz = (w.maxZ - w.minZ) / 2f + hs
-                                if (abs(nx - cx) / hw > abs(nz - cz) / hz) nx = cx + if (nx > cx) hw else -hw
-                                else nz = cz + if (nz > cz) hz else -hz
+                        for (pass in 0 until 2) {
+                            for (w in arena.walls) {
+                                val hs = e.type.size * 0.5f
+                                if (nx + hs > w.minX && nx - hs < w.maxX && nz + hs > w.minZ && nz - hs < w.maxZ) {
+                                    val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
+                                    val hw = (w.maxX - w.minX) / 2f + hs; val hz = (w.maxZ - w.minZ) / 2f + hs
+                                    if (abs(nx - cx) / hw > abs(nz - cz) / hz) nx = cx + if (nx > cx) hw else -hw
+                                    else nz = cz + if (nz > cz) hz else -hz
+                                }
                             }
                         }
                         e.position.x = nx.coerceIn(-arena.half + 0.5f, arena.half - 0.5f)
@@ -303,15 +305,17 @@ class GameEngine {
     }
 
     private fun resolvePlayerWallCollision() {
-        val pr = 0.35f
-        for (w in arena.walls) {
-            val px = player.position.x; val pz = player.position.z
-            if (px + pr > w.minX && px - pr < w.maxX && pz + pr > w.minZ && pz - pr < w.maxZ) {
-                val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
-                val hw = (w.maxX - w.minX) / 2f + pr; val hz = (w.maxZ - w.minZ) / 2f + pr
-                val ox = px - cx; val oz = pz - cz
-                if (abs(ox) / hw > abs(oz) / hz) player.position.x = cx + if (ox > 0) hw else -hw
-                else player.position.z = cz + if (oz > 0) hz else -hz
+        val pr = 0.45f
+        for (pass in 0 until 3) {
+            for (w in arena.walls) {
+                val px = player.position.x; val pz = player.position.z
+                if (px + pr > w.minX && px - pr < w.maxX && pz + pr > w.minZ && pz - pr < w.maxZ) {
+                    val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
+                    val hw = (w.maxX - w.minX) / 2f + pr; val hz = (w.maxZ - w.minZ) / 2f + pr
+                    val ox = px - cx; val oz = pz - cz
+                    if (abs(ox) / hw > abs(oz) / hz) player.position.x = cx + if (ox > 0) hw else -hw
+                    else player.position.z = cz + if (oz > 0) hz else -hz
+                }
             }
         }
     }

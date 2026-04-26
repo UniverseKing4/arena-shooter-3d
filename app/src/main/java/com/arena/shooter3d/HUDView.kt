@@ -69,7 +69,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             p.style = Paint.Style.FILL; p.color = 0x88FFFFFF.toInt()
             canvas.drawCircle(ic.joyThumbX, ic.joyThumbY, ic.joyInnerRadius, p)
         } else {
-            val cx = 180f; val cy = height - 170f
+            val cx = 200f; val cy = height - 200f
             p.color = 0x1AFFFFFF.toInt()
             canvas.drawCircle(cx, cy, ic.joyOuterRadius, p)
             p.color = 0x15FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.5f
@@ -109,8 +109,18 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         val bx = ic().pauseBtnX; val by = ic().pauseBtnY; val br = ic().pauseBtnRadius
         p.color = 0x33FFFFFF.toInt(); canvas.drawCircle(bx, by, br, p)
         p.color = 0xAAFFFFFF.toInt()
-        canvas.drawRect(bx - 7, by - 10, bx - 3, by + 10, p)
-        canvas.drawRect(bx + 3, by - 10, bx + 7, by + 10, p)
+        val hs = hudState
+        if (hs != null && hs.gameState == GameState.PAUSED) {
+            val path = android.graphics.Path()
+            path.moveTo(bx - 6, by - 10)
+            path.lineTo(bx + 10, by)
+            path.lineTo(bx - 6, by + 10)
+            path.close()
+            canvas.drawPath(path, p)
+        } else {
+            canvas.drawRect(bx - 7, by - 10, bx - 3, by + 10, p)
+            canvas.drawRect(bx + 3, by - 10, bx + 7, by + 10, p)
+        }
     }
 
     private fun drawHealthBar(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
