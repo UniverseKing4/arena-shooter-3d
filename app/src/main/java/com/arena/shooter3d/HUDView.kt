@@ -107,21 +107,21 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
 
         p.color = if (ic().isFiring) 0xDDFFFFFF.toInt() else 0x88FFFFFF.toInt()
-        val cs = 28f; val ct = 4.5f; val cg = 8f
+        val cs = 32f; val ct = 5f; val cg = 10f
         canvas.drawRect(bx - cs, by - ct, bx - cg, by + ct, p)
         canvas.drawRect(bx + cg, by - ct, bx + cs, by + ct, p)
         canvas.drawRect(bx - ct, by - cs, bx + ct, by - cg, p)
         canvas.drawRect(bx - ct, by + cg, bx + ct, by + cs, p)
-        canvas.drawCircle(bx, by, 4.5f, p)
+        canvas.drawCircle(bx, by, 5f, p)
     }
 
     private fun drawWeaponSwitch(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
         val bx = ic().switchBtnX; val by = ic().switchBtnY; val br = ic().switchBtnRadius
-        p.color = 0x33FFFFFF.toInt(); canvas.drawCircle(bx, by, br, p)
-        p.color = 0x55FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2.5f
+        p.color = 0x44FFFFFF.toInt(); canvas.drawCircle(bx, by, br, p)
+        p.color = 0x66FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 3f
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
-        tp.textSize = 18f; tp.color = 0xCCFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
-        canvas.drawText(hs.weaponName, bx, by + 6, tp); tp.textAlign = Paint.Align.LEFT
+        tp.textSize = 20f; tp.color = 0xDDFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText(hs.weaponName, bx, by + 7, tp); tp.textAlign = Paint.Align.LEFT
     }
 
     private fun drawPauseBtn(canvas: Canvas, w: Float) {
@@ -161,10 +161,11 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawScore(canvas: Canvas, w: Float, hs: HUDState) {
-        scoreP.textSize = 36f; scoreP.color = Color.WHITE
-        canvas.drawText("${hs.score}", w - 100, 50f, scoreP)
+        val rx = w - 25f
         scoreP.textSize = 17f; scoreP.color = 0xFFB0BEC5.toInt()
-        canvas.drawText("SCORE", w - 100, 24f, scoreP)
+        canvas.drawText("SCORE", rx, 28f, scoreP)
+        scoreP.textSize = 38f; scoreP.color = Color.WHITE
+        canvas.drawText("${hs.score}", rx, 68f, scoreP)
     }
 
     private fun drawCombo(canvas: Canvas, w: Float, hs: HUDState) {
@@ -172,7 +173,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             val a = ((hs.comboTimer / 3f) * 255).toInt().coerceIn(0, 255)
             comboP.color = Color.argb(a, 255, 193, 7)
             comboP.textSize = 28f + hs.combo.coerceAtMost(10) * 2f
-            canvas.drawText("x${hs.combo}", w - 100, 85f, comboP)
+            canvas.drawText("x${hs.combo}", w - 25f, 102f, comboP)
         }
     }
 
@@ -211,6 +212,17 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         canvas.drawText("PAUSED", w / 2, h * 0.4f, titleP)
         subP.color = Color.WHITE; subP.textSize = 28f
         canvas.drawText("TAP PAUSE BUTTON TO RESUME", w / 2, h * 0.58f, subP)
+
+        val bx = ic().pauseBtnX; val by = ic().pauseBtnY; val br = ic().pauseBtnRadius
+        p.color = 0xFF333333.toInt(); canvas.drawCircle(bx, by, br + 4, p)
+        p.color = 0xFF00E5FF.toInt(); canvas.drawCircle(bx, by, br, p)
+        p.color = 0xFFFFFFFF.toInt()
+        val path = android.graphics.Path()
+        path.moveTo(bx - 8, by - 12)
+        path.lineTo(bx + 12, by)
+        path.lineTo(bx - 8, by + 12)
+        path.close()
+        canvas.drawPath(path, p)
     }
 
     private fun drawGameOver(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
