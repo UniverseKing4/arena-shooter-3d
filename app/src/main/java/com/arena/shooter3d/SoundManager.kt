@@ -2,8 +2,6 @@ package com.arena.shooter3d
 
 import android.content.Context
 import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.SoundPool
 import java.io.File
 import java.io.FileOutputStream
@@ -12,107 +10,94 @@ import java.nio.ByteOrder
 import kotlin.math.*
 import kotlin.random.Random
 
-class SoundManager(private val context: Context) {
-
-    private var soundPool: SoundPool? = null
-    private var shootPistolId = 0
-    private var shootShotgunId = 0
-    private var shootRifleId = 0
-    private var hitMarkerId = 0
-    private var pickupId = 0
-    private var hurtId = 0
-    private var loaded = false
+class SoundManager(private val ctx: Context) {
+    private var pool: SoundPool? = null
+    private val ids = IntArray(10)
+    private var ready = false
 
     fun init() {
-        val attrs = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        soundPool = SoundPool.Builder().setMaxStreams(8).setAudioAttributes(attrs).build()
-
+        val a = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+        pool = SoundPool.Builder().setMaxStreams(10).setAudioAttributes(a).build()
         try {
-            shootPistolId = loadGeneratedSound("pistol", generateShot(0.12f, 800f, 0.7f))
-            shootShotgunId = loadGeneratedSound("shotgun", generateShot(0.2f, 400f, 1f))
-            shootRifleId = loadGeneratedSound("rifle", generateShot(0.08f, 1200f, 0.5f))
-            hitMarkerId = loadGeneratedSound("hit", generateTone(0.06f, 1800f, 0.4f))
-            pickupId = loadGeneratedSound("pickup", generatePickup())
-            hurtId = loadGeneratedSound("hurt", generateShot(0.15f, 200f, 0.8f))
-            loaded = true
+            ids[0] = gen("pistol", shot(0.1f, 900f, 0.6f))
+            ids[1] = gen("shotgun", shot(0.18f, 350f, 0.9f))
+            ids[2] = gen("rifle", shot(0.06f, 1400f, 0.45f))
+            ids[3] = gen("hit", tone(0.05f, 2000f, 0.3f))
+            ids[4] = gen("kill", descTone(0.2f, 800f, 300f, 0.5f))
+            ids[5] = gen("pickup", ascTone(0.18f, 600f, 1400f, 0.4f))
+            ids[6] = gen("hurt", shot(0.12f, 180f, 0.75f))
+            ids[7] = gen("wave", beeps(3, 0.06f, 1200f, 0.35f))
+            ids[8] = gen("over", descTone(0.5f, 600f, 150f, 0.6f))
+            ids[9] = gen("switch", tone(0.04f, 1600f, 0.25f))
+            ready = true
         } catch (_: Exception) {}
     }
 
-    private fun loadGeneratedSound(name: String, pcm: ShortArray): Int {
-        val file = File(context.cacheDir, "$name.wav")
-        writeWav(file, pcm, 22050)
-        return soundPool?.load(file.absolutePath, 1) ?: 0
+    fun play(index: Int) {
+        if (ready && index in ids.indices) pool?.play(ids[index], 0.45f, 0.45f, 1, 0, 1f)
     }
 
-    private fun generateShot(duration: Float, freq: Float, intensity: Float): ShortArray {
-        val rate = 22050
-        val samples = (rate * duration).toInt()
-        val out = ShortArray(samples)
-        for (i in 0 until samples) {
-            val t = i.toFloat() / rate
-            val env = (1f - t / duration).pow(3f) * intensity
-            val noise = (Random.nextFloat() * 2f - 1f)
-            val tone = sin(2f * PI.toFloat() * freq * t * (1f - t / duration))
-            out[i] = ((noise * 0.7f + tone * 0.3f) * env * 32000).toInt().coerceIn(-32768, 32767).toShort()
-        }
-        return out
+    fun release() { pool?.release(); pool = null; ready = false }
+
+    private fun gen(name: String, pcm: ShortArray): Int {
+        val f = File(ctx.cacheDir, "$name.wav"); writeWav(f, pcm, 22050)
+        return pool?.load(f.absolutePath, 1) ?: 0
     }
 
-    private fun generateTone(duration: Float, freq: Float, vol: Float): ShortArray {
-        val rate = 22050
-        val samples = (rate * duration).toInt()
-        val out = ShortArray(samples)
-        for (i in 0 until samples) {
-            val t = i.toFloat() / rate
-            val env = (1f - t / duration) * vol
-            out[i] = (sin(2f * PI.toFloat() * freq * t) * env * 32000).toInt().coerceIn(-32768, 32767).toShort()
-        }
-        return out
+    private fun shot(dur: Float, freq: Float, vol: Float): ShortArray {
+        val r = 22050; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r
+            val env = (1f - t / dur).pow(3f) * vol
+            val ns = Random.nextFloat() * 2f - 1f
+            val tn = sin(2f * PI.toFloat() * freq * t * (1f - t / dur))
+            o[i] = ((ns * 0.7f + tn * 0.3f) * env * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
     }
 
-    private fun generatePickup(): ShortArray {
-        val rate = 22050
-        val dur = 0.2f
-        val samples = (rate * dur).toInt()
-        val out = ShortArray(samples)
-        for (i in 0 until samples) {
-            val t = i.toFloat() / rate
-            val freq = 600f + t / dur * 800f
-            val env = (1f - t / dur) * 0.5f
-            out[i] = (sin(2f * PI.toFloat() * freq * t) * env * 32000).toInt().coerceIn(-32768, 32767).toShort()
-        }
-        return out
+    private fun tone(dur: Float, freq: Float, vol: Float): ShortArray {
+        val r = 22050; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r
+            o[i] = (sin(2f * PI.toFloat() * freq * t) * (1f - t / dur) * vol * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
     }
 
-    private fun writeWav(file: File, pcm: ShortArray, sampleRate: Int) {
-        val dataSize = pcm.size * 2
-        val buf = ByteBuffer.allocate(44 + dataSize).order(ByteOrder.LITTLE_ENDIAN)
-        buf.put("RIFF".toByteArray()); buf.putInt(36 + dataSize)
-        buf.put("WAVE".toByteArray()); buf.put("fmt ".toByteArray())
-        buf.putInt(16); buf.putShort(1); buf.putShort(1)
-        buf.putInt(sampleRate); buf.putInt(sampleRate * 2)
-        buf.putShort(2); buf.putShort(16)
-        buf.put("data".toByteArray()); buf.putInt(dataSize)
-        for (s in pcm) buf.putShort(s)
-        FileOutputStream(file).use { it.write(buf.array()) }
+    private fun ascTone(dur: Float, f0: Float, f1: Float, vol: Float): ShortArray {
+        val r = 22050; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val freq = f0 + (f1 - f0) * p
+            o[i] = (sin(2f * PI.toFloat() * freq * t) * (1f - p) * vol * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
     }
 
-    fun playShoot(weaponIndex: Int) {
-        if (!loaded) return
-        val id = when (weaponIndex) { 0 -> shootPistolId; 1 -> shootShotgunId; else -> shootRifleId }
-        soundPool?.play(id, 0.5f, 0.5f, 1, 0, 1f)
+    private fun descTone(dur: Float, f0: Float, f1: Float, vol: Float): ShortArray {
+        val r = 22050; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val freq = f0 + (f1 - f0) * p
+            o[i] = (sin(2f * PI.toFloat() * freq * t) * (1f - p * 0.5f) * vol * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
     }
 
-    fun playHit() { if (loaded) soundPool?.play(hitMarkerId, 0.3f, 0.3f, 1, 0, 1f) }
-    fun playPickup() { if (loaded) soundPool?.play(pickupId, 0.4f, 0.4f, 1, 0, 1f) }
-    fun playHurt() { if (loaded) soundPool?.play(hurtId, 0.5f, 0.5f, 1, 0, 1f) }
+    private fun beeps(count: Int, bDur: Float, freq: Float, vol: Float): ShortArray {
+        val r = 22050; val gap = 0.04f; val total = count * bDur + (count - 1) * gap
+        val n = (r * total).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r
+            val cycle = bDur + gap; val pos = t % cycle
+            if (pos < bDur) {
+                val env = (1f - pos / bDur) * vol
+                o[i] = (sin(2f * PI.toFloat() * freq * pos) * env * 30000).toInt().coerceIn(-32768, 32767).toShort()
+            }
+        }; return o
+    }
 
-    fun release() {
-        soundPool?.release()
-        soundPool = null
-        loaded = false
+    private fun writeWav(file: File, pcm: ShortArray, sr: Int) {
+        val ds = pcm.size * 2
+        val b = ByteBuffer.allocate(44 + ds).order(ByteOrder.LITTLE_ENDIAN)
+        b.put("RIFF".toByteArray()); b.putInt(36 + ds); b.put("WAVE".toByteArray())
+        b.put("fmt ".toByteArray()); b.putInt(16); b.putShort(1); b.putShort(1)
+        b.putInt(sr); b.putInt(sr * 2); b.putShort(2); b.putShort(16)
+        b.put("data".toByteArray()); b.putInt(ds)
+        for (s in pcm) b.putShort(s)
+        FileOutputStream(file).use { it.write(b.array()) }
     }
 }

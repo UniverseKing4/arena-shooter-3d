@@ -13,18 +13,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var gameView: GameView
     private lateinit var hudView: HUDView
+    private lateinit var soundManager: SoundManager
     private val engine = GameEngine()
     private val input = InputController()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideSystemUI()
 
-        hudView = HUDView(this)
-        gameView = GameView(this, engine, input, hudView)
+        soundManager = SoundManager(this)
+        soundManager.init()
+
+        hudView = HUDView(this, input)
+        gameView = GameView(this, engine, input, hudView, soundManager)
 
         val root = findViewById<FrameLayout>(R.id.rootLayout)
         root.addView(gameView, FrameLayout.LayoutParams(
@@ -33,16 +36,9 @@ class MainActivity : AppCompatActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
     }
 
-    override fun onResume() {
-        super.onResume()
-        gameView.onResume()
-        hideSystemUI()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        gameView.onPause()
-    }
+    override fun onResume() { super.onResume(); gameView.onResume(); hideSystemUI() }
+    override fun onPause() { super.onPause(); gameView.onPause() }
+    override fun onDestroy() { super.onDestroy(); soundManager.release() }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -58,13 +54,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            )
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
         }
     }
 }

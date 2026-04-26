@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /root/new/app/src/main/java/com/arena/shooter3d)",
+      "Bash(rm -rf /root/new/app/src/main/java/com/app)",
+      "Bash(git init *)",
+      "Bash(chmod +x gradlew)",
+      "Bash(git branch *)",
+      "Bash(keytool *)",
+      "Bash(gh repo *)",
+      "Bash(gh secret *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(bash *)"
+    ]
+  }
+}
