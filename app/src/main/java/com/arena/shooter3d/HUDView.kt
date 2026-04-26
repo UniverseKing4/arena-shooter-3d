@@ -47,6 +47,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawPlaying(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        drawCrosshair(canvas, w, h)
         drawJoystick(canvas)
         drawFireButton(canvas, w, h, hs)
         drawWeaponSwitch(canvas, w, h, hs)
@@ -59,6 +60,24 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         drawMinimap(canvas, w, hs)
     }
 
+    private fun drawCrosshair(canvas: Canvas, w: Float, h: Float) {
+        val cx = w / 2f; val cy = h / 2f
+
+        p.color = 0x66FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2.5f
+        canvas.drawCircle(cx, cy, 30f, p)
+        p.style = Paint.Style.FILL
+
+        p.color = 0xE0FFFFFF.toInt()
+        val g = 10f; val s = 26f; val t = 2.5f
+        canvas.drawRect(cx - s, cy - t, cx - g, cy + t, p)
+        canvas.drawRect(cx + g, cy - t, cx + s, cy + t, p)
+        canvas.drawRect(cx - t, cy - s, cx + t, cy - g, p)
+        canvas.drawRect(cx - t, cy + g, cx + t, cy + s, p)
+
+        p.color = 0xFFFFFFFF.toInt()
+        canvas.drawCircle(cx, cy, 3f, p)
+    }
+
     private fun drawJoystick(canvas: Canvas) {
         val ic = input
         if (ic.joyActive) {
@@ -69,7 +88,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             p.style = Paint.Style.FILL; p.color = 0x88FFFFFF.toInt()
             canvas.drawCircle(ic.joyThumbX, ic.joyThumbY, ic.joyInnerRadius, p)
         } else {
-            val cx = 200f; val cy = height - 200f
+            val cx = 280f; val cy = height - 260f
             p.color = 0x1AFFFFFF.toInt()
             canvas.drawCircle(cx, cy, ic.joyOuterRadius, p)
             p.color = 0x15FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.5f
@@ -84,25 +103,25 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = if (ic().isFiring) 0x66FF1744.toInt() else 0x33FF1744.toInt()
         canvas.drawCircle(bx, by, br, p)
         p.color = if (ic().isFiring) 0xCCFF1744.toInt() else 0x66FF1744.toInt()
-        p.style = Paint.Style.STROKE; p.strokeWidth = 4f
+        p.style = Paint.Style.STROKE; p.strokeWidth = 5f
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
 
         p.color = if (ic().isFiring) 0xDDFFFFFF.toInt() else 0x88FFFFFF.toInt()
-        val cs = 20f; val ct = 3.5f; val cg = 6f
+        val cs = 28f; val ct = 4.5f; val cg = 8f
         canvas.drawRect(bx - cs, by - ct, bx - cg, by + ct, p)
         canvas.drawRect(bx + cg, by - ct, bx + cs, by + ct, p)
         canvas.drawRect(bx - ct, by - cs, bx + ct, by - cg, p)
         canvas.drawRect(bx - ct, by + cg, bx + ct, by + cs, p)
-        canvas.drawCircle(bx, by, 3.5f, p)
+        canvas.drawCircle(bx, by, 4.5f, p)
     }
 
     private fun drawWeaponSwitch(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
         val bx = ic().switchBtnX; val by = ic().switchBtnY; val br = ic().switchBtnRadius
         p.color = 0x33FFFFFF.toInt(); canvas.drawCircle(bx, by, br, p)
-        p.color = 0x55FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2f
+        p.color = 0x55FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2.5f
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
-        tp.textSize = 14f; tp.color = 0xCCFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
-        canvas.drawText(hs.weaponName, bx, by + 5, tp); tp.textAlign = Paint.Align.LEFT
+        tp.textSize = 18f; tp.color = 0xCCFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText(hs.weaponName, bx, by + 6, tp); tp.textAlign = Paint.Align.LEFT
     }
 
     private fun drawPauseBtn(canvas: Canvas, w: Float) {
@@ -164,26 +183,26 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawMinimap(canvas: Canvas, w: Float, hs: HUDState) {
-        val ms = 160f; val mx = 20f; val my = 20f; val mcx = mx + ms / 2; val mcy = my + ms / 2
-        p.color = 0x55000000.toInt(); canvas.drawRoundRect(mx, my, mx + ms, my + ms, 6f, 6f, p)
-        p.color = 0x200088FF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.5f
-        canvas.drawRoundRect(mx, my, mx + ms, my + ms, 6f, 6f, p); p.style = Paint.Style.FILL
+        val ms = 240f; val mx = 15f; val my = 15f; val mcx = mx + ms / 2; val mcy = my + ms / 2
+        p.color = 0x55000000.toInt(); canvas.drawRoundRect(mx, my, mx + ms, my + ms, 8f, 8f, p)
+        p.color = 0x250088FF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2f
+        canvas.drawRoundRect(mx, my, mx + ms, my + ms, 8f, 8f, p); p.style = Paint.Style.FILL
         val sc = ms / (hs.arenaHalf * 2)
         for ((ex, ez) in hs.enemyPositions) {
             val rx = mcx + (ex - hs.playerX) * sc; val ry = mcy + (ez - hs.playerZ) * sc
-            if (rx > mx + 4 && rx < mx + ms - 4 && ry > my + 4 && ry < my + ms - 4) {
-                p.color = 0xFFFF1744.toInt(); canvas.drawCircle(rx, ry, 3.5f, p)
+            if (rx > mx + 5 && rx < mx + ms - 5 && ry > my + 5 && ry < my + ms - 5) {
+                p.color = 0xFFFF1744.toInt(); canvas.drawCircle(rx, ry, 4.5f, p)
             }
         }
         for ((px, pz, t) in hs.pickupPositions) {
             if (t < 0) continue; val rx = mcx + (px - hs.playerX) * sc; val ry = mcy + (pz - hs.playerZ) * sc
-            if (rx > mx + 4 && rx < mx + ms - 4 && ry > my + 4 && ry < my + ms - 4) {
-                p.color = if (t == 0) 0xFF4CAF50.toInt() else 0xFF2196F3.toInt(); canvas.drawCircle(rx, ry, 2.5f, p)
+            if (rx > mx + 5 && rx < mx + ms - 5 && ry > my + 5 && ry < my + ms - 5) {
+                p.color = if (t == 0) 0xFF4CAF50.toInt() else 0xFF2196F3.toInt(); canvas.drawCircle(rx, ry, 3f, p)
             }
         }
-        p.color = 0xFF00E5FF.toInt(); canvas.drawCircle(mcx, mcy, 4.5f, p)
-        val dl = 9f; val dx = sin(hs.playerYaw) * dl; val dy = -cos(hs.playerYaw) * dl
-        p.strokeWidth = 2.5f; canvas.drawLine(mcx, mcy, mcx + dx, mcy + dy, p); p.strokeWidth = 1f
+        p.color = 0xFF00E5FF.toInt(); canvas.drawCircle(mcx, mcy, 5.5f, p)
+        val dl = 12f; val dx = sin(hs.playerYaw) * dl; val dy = -cos(hs.playerYaw) * dl
+        p.strokeWidth = 3f; canvas.drawLine(mcx, mcy, mcx + dx, mcy + dy, p); p.strokeWidth = 1f
     }
 
     private fun drawPauseOverlay(canvas: Canvas, w: Float, h: Float) {

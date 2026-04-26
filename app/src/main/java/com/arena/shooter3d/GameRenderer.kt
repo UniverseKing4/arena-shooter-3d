@@ -78,7 +78,7 @@ class GameRenderer(
         useScene(); GLES20.glUniform3f(uLightDir, 0.35f, 0.85f, 0.25f)
         GLES20.glUniform3f(uCameraPos, p.position.x, p.eyeY, p.position.z)
         drawFloor(); drawWalls(); drawEnemies(); drawProjectiles(); drawPickups()
-        drawParticles(); drawGunViewmodel(); drawCrosshair(); drawDamageFlash(p.damageFlash)
+        drawParticles(); drawGunViewmodel(); drawDamageFlash(p.damageFlash)
     }
 
     private fun useScene() { GLES20.glUseProgram(sceneProgram); GLES20.glUniform1f(uAlpha, 1f); GLES20.glUniform1i(uTexType, 0) }
@@ -248,46 +248,6 @@ class GameRenderer(
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, pts.size)
         GLES20.glDisableVertexAttribArray(paPos); GLES20.glDisableVertexAttribArray(paSize); GLES20.glDisableVertexAttribArray(paColor)
         GLES20.glDepthMask(true); GLES20.glDisable(GLES20.GL_BLEND)
-    }
-
-    private fun drawCrosshair() {
-        GLES20.glUseProgram(hudProgram); GLES20.glDisable(GLES20.GL_DEPTH_TEST)
-        GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
-        val o = FloatArray(16); Matrix.orthoM(o, 0, 0f, screenW.toFloat(), screenH.toFloat(), 0f, -1f, 1f)
-        GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0)
-        val cx = screenW / 2f; val cy = screenH / 2f
-
-        val ringR = 28f; val ringT = 1.8f; val segs = 32
-        val ringVerts = mutableListOf<Float>()
-        for (i in 0 until segs) {
-            val a0 = (2f * PI.toFloat() * i) / segs
-            val a1 = (2f * PI.toFloat() * (i + 1)) / segs
-            val c0 = cos(a0); val s0 = sin(a0); val c1 = cos(a1); val s1 = sin(a1)
-            val inR = ringR - ringT; val outR = ringR + ringT
-            ringVerts.addAll(listOf(cx+c0*inR,cy+s0*inR, cx+c0*outR,cy+s0*outR, cx+c1*outR,cy+s1*outR))
-            ringVerts.addAll(listOf(cx+c0*inR,cy+s0*inR, cx+c1*outR,cy+s1*outR, cx+c1*inR,cy+s1*inR))
-        }
-
-        val g = 10f; val s = 24f; val t = 2.2f
-        val crossVerts = floatArrayOf(
-            cx-s,cy-t,cx-g,cy-t,cx-g,cy+t, cx-s,cy-t,cx-g,cy+t,cx-s,cy+t,
-            cx+g,cy-t,cx+s,cy-t,cx+s,cy+t, cx+g,cy-t,cx+s,cy+t,cx+g,cy+t,
-            cx-t,cy-s,cx+t,cy-s,cx+t,cy-g, cx-t,cy-s,cx+t,cy-g,cx-t,cy-g,
-            cx-t,cy+g,cx+t,cy+g,cx+t,cy+s, cx-t,cy+g,cx+t,cy+s,cx-t,cy+s,
-            cx-3f,cy-3f,cx+3f,cy-3f,cx+3f,cy+3f, cx-3f,cy-3f,cx+3f,cy+3f,cx-3f,cy+3f)
-
-        GLES20.glUniform4f(huColor, 1f, 1f, 1f, 0.4f)
-        val ringBuf = fbuf(ringVerts.toFloatArray())
-        GLES20.glEnableVertexAttribArray(haPos)
-        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, ringBuf)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, ringVerts.size / 2)
-
-        GLES20.glUniform4f(huColor, 1f, 1f, 1f, 0.9f)
-        val crossBuf = fbuf(crossVerts)
-        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, crossBuf)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, crossVerts.size / 2)
-
-        GLES20.glDisableVertexAttribArray(haPos); GLES20.glDisable(GLES20.GL_BLEND); GLES20.glEnable(GLES20.GL_DEPTH_TEST)
     }
 
     private fun drawDamageFlash(amt: Float) {

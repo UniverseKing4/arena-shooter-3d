@@ -22,15 +22,15 @@ class InputController {
     private var screenW = 1f; private var screenH = 1f
     private val lookSensitivity = 0.005f
 
-    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 110f
-    var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 40f
+    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 140f
+    var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 55f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
-    val joyOuterRadius = 100f; val joyInnerRadius = 38f
+    val joyOuterRadius = 120f; val joyInnerRadius = 45f
 
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
-        fireBtnX = screenW - 340f; fireBtnY = screenH - 260f
-        switchBtnX = screenW - 340f; switchBtnY = screenH - 430f
+        fireBtnX = screenW - 420f; fireBtnY = screenH - 300f
+        switchBtnX = screenW - 130f; switchBtnY = screenH - 200f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
 
@@ -44,7 +44,7 @@ class InputController {
         if (inCircle(x, y, pauseBtnX, pauseBtnY, pauseBtnRadius + 12f)) {
             pauseTapped = true; return
         }
-        if (x < screenW * 0.4f) {
+        if (x < screenW * 0.45f) {
             movePointerId = pointerId
             joyCenterX = x; joyCenterY = y
             joyThumbX = x; joyThumbY = y
