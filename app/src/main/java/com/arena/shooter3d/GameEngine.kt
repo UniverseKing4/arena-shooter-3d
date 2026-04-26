@@ -173,7 +173,7 @@ class GameEngine {
                         hit = true; soundEvents.add(SoundEvent.HIT_ENEMY)
                         spawnBurst(nx, ny, nz, 0.8f, 0.15f, 0.1f, 5)
                         if (e.health <= 0) {
-                            e.state = EnemyState.DYING; e.deathTimer = 0.5f
+                            e.state = EnemyState.DYING; e.deathTimer = 1.2f
                             addScore(e.type.scoreValue); player.kills++
                             soundEvents.add(SoundEvent.KILL_ENEMY)
                             spawnBurst(e.position.x, ey, e.position.z, e.type.bodyR, e.type.bodyG, e.type.bodyB, 18)
@@ -193,9 +193,14 @@ class GameEngine {
         val iter = enemies.iterator()
         while (iter.hasNext()) {
             val e = iter.next()
-            e.bobPhase += dt * 3f; e.hitFlash = (e.hitFlash - dt * 5f).coerceAtLeast(0f)
+            e.bobPhase += dt * (if (e.state == EnemyState.CHASE) 5f else 3f); e.hitFlash = (e.hitFlash - dt * 5f).coerceAtLeast(0f)
             when (e.state) {
-                EnemyState.DYING -> { e.deathTimer -= dt; if (e.deathTimer <= 0f) iter.remove() }
+                EnemyState.DYING -> {
+                    e.deathTimer -= dt
+                    e.deathRotX = (e.deathRotX + dt * 120f).coerceAtMost(90f)
+                    e.position.y = (e.position.y - dt * 1.5f).coerceAtLeast(0f)
+                    if (e.deathTimer <= 0f) iter.remove()
+                }
                 EnemyState.STAGGER -> { e.stateTimer -= dt; if (e.stateTimer <= 0f) e.state = EnemyState.CHASE }
                 EnemyState.CHASE -> {
                     val toPlayer = (player.position - e.position).xz()
@@ -204,8 +209,19 @@ class GameEngine {
                         e.state = EnemyState.ATTACK; e.stateTimer = 0.35f
                     } else if (dist > 0.1f) {
                         val dir = toPlayer.normalized()
-                        var nx = e.position.x + dir.x * e.type.speed * dt
-                        var nz = e.position.z + dir.z * e.type.speed * dt
+                        var spd = e.type.speed
+                        var mx = dir.x; var mz = dir.z
+                        e.strafeTimer -= dt
+                        if (e.strafeTimer <= 0f) { e.strafeDir = -e.strafeDir; e.strafeTimer = 1.5f + rng.nextFloat() * 2f }
+                        if (e.type == EnemyType.RUNNER && dist < 8f) {
+                            val perpX = -dir.z * e.strafeDir; val perpZ = dir.x * e.strafeDir
+                            mx = dir.x * 0.6f + perpX * 0.4f; mz = dir.z * 0.6f + perpZ * 0.4f
+                            spd *= 1.2f
+                        } else if (e.type == EnemyType.BRUTE && dist < 6f) {
+                            spd *= 1.5f
+                        }
+                        var nx = e.position.x + mx * spd * dt
+                        var nz = e.position.z + mz * spd * dt
                         val er = e.type.size * 0.5f
                         for (pass in 0 until 3) {
                             for (w in arena.walls) {
@@ -292,6 +308,7 @@ class GameEngine {
     private fun spawnWave() {
         val count = (3 + wave * 2).coerceAtMost(28)
         val spawns = arena.spawnPoints.shuffled()
+        val limit = arena.half - 1.5f
         for (i in 0 until count) {
             val sp = spawns[i % spawns.size]
             val off = Vec3((rng.nextFloat() - 0.5f) * 3f, 0f, (rng.nextFloat() - 0.5f) * 3f)
@@ -301,7 +318,10 @@ class GameEngine {
                 wave <= 7 -> when { rng.nextFloat() < 0.15f -> EnemyType.BRUTE; rng.nextFloat() < 0.5f -> EnemyType.RUNNER; else -> EnemyType.WALKER }
                 else -> when { rng.nextFloat() < 0.25f -> EnemyType.BRUTE; rng.nextFloat() < 0.5f -> EnemyType.RUNNER; else -> EnemyType.WALKER }
             }
-            enemies.add(Enemy(sp + off, type))
+            val pos = sp + off
+            pos.x = pos.x.coerceIn(-limit, limit)
+            pos.z = pos.z.coerceIn(-limit, limit)
+            enemies.add(Enemy(pos, type))
         }
     }
 

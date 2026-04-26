@@ -63,10 +63,6 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     private fun drawCrosshair(canvas: Canvas, w: Float, h: Float) {
         val cx = w / 2f; val cy = h / 2f
 
-        p.color = 0x66FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2.5f
-        canvas.drawCircle(cx, cy, 30f, p)
-        p.style = Paint.Style.FILL
-
         p.color = 0xE0FFFFFF.toInt()
         val g = 10f; val s = 26f; val t = 2.5f
         canvas.drawRect(cx - s, cy - t, cx - g, cy + t, p)
@@ -125,20 +121,23 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawPauseBtn(canvas: Canvas, w: Float) {
-        val bx = ic().pauseBtnX; val by = ic().pauseBtnY; val br = ic().pauseBtnRadius
-        p.color = 0x33FFFFFF.toInt(); canvas.drawCircle(bx, by, br, p)
-        p.color = 0xAAFFFFFF.toInt()
+        val bx = w - 50f; val by = 50f; val br = 32f
+        input.pauseBtnX = bx; input.pauseBtnY = by
+        p.color = 0x55000000.toInt(); canvas.drawCircle(bx, by, br, p)
+        p.color = 0x44FFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 2f
+        canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
+        p.color = 0xDDFFFFFF.toInt()
         val hs = hudState
         if (hs != null && hs.gameState == GameState.PAUSED) {
             val path = android.graphics.Path()
-            path.moveTo(bx - 6, by - 10)
-            path.lineTo(bx + 10, by)
-            path.lineTo(bx - 6, by + 10)
+            path.moveTo(bx - 7, by - 11)
+            path.lineTo(bx + 11, by)
+            path.lineTo(bx - 7, by + 11)
             path.close()
             canvas.drawPath(path, p)
         } else {
-            canvas.drawRect(bx - 7, by - 10, bx - 3, by + 10, p)
-            canvas.drawRect(bx + 3, by - 10, bx + 7, by + 10, p)
+            canvas.drawRect(bx - 8, by - 11, bx - 3, by + 11, p)
+            canvas.drawRect(bx + 3, by - 11, bx + 8, by + 11, p)
         }
     }
 
@@ -161,11 +160,13 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawScore(canvas: Canvas, w: Float, hs: HUDState) {
-        val rx = w - 25f
-        scoreP.textSize = 17f; scoreP.color = 0xFFB0BEC5.toInt()
-        canvas.drawText("SCORE", rx, 28f, scoreP)
-        scoreP.textSize = 38f; scoreP.color = Color.WHITE
-        canvas.drawText("${hs.score}", rx, 68f, scoreP)
+        val rx = w - 18f; val top = 95f
+        p.color = 0x44000000.toInt()
+        canvas.drawRoundRect(rx - 130f, top - 18f, rx + 5f, top + 50f, 6f, 6f, p)
+        scoreP.textSize = 16f; scoreP.color = 0xFFB0BEC5.toInt()
+        canvas.drawText("SCORE", rx, top, scoreP)
+        scoreP.textSize = 36f; scoreP.color = Color.WHITE
+        canvas.drawText("${hs.score}", rx, top + 38f, scoreP)
     }
 
     private fun drawCombo(canvas: Canvas, w: Float, hs: HUDState) {
@@ -173,7 +174,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
             val a = ((hs.comboTimer / 3f) * 255).toInt().coerceIn(0, 255)
             comboP.color = Color.argb(a, 255, 193, 7)
             comboP.textSize = 28f + hs.combo.coerceAtMost(10) * 2f
-            canvas.drawText("x${hs.combo}", w - 25f, 102f, comboP)
+            canvas.drawText("x${hs.combo}", w - 18f, 165f, comboP)
         }
     }
 

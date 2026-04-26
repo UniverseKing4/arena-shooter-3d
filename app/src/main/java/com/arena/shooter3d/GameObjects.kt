@@ -32,11 +32,11 @@ enum class EnemyType(
     val size: Float, val bodyR: Float, val bodyG: Float, val bodyB: Float,
     val headR: Float, val headG: Float, val headB: Float, val scoreValue: Int
 ) {
-    WALKER(35, 3.5f, 8, 2.2f, 1.0f,
+    WALKER(35, 3.5f, 8, 2.5f, 1.3f,
         0.3f, 0.5f, 0.22f, 0.35f, 0.55f, 0.28f, 100),
-    RUNNER(55, 6f, 12, 2.4f, 0.9f,
+    RUNNER(55, 6f, 12, 2.6f, 1.15f,
         0.55f, 0.22f, 0.18f, 0.6f, 0.28f, 0.22f, 200),
-    BRUTE(130, 2.2f, 22, 3.5f, 1.5f,
+    BRUTE(130, 2.2f, 22, 4.0f, 2.0f,
         0.38f, 0.28f, 0.42f, 0.48f, 0.38f, 0.52f, 500)
 }
 
@@ -49,7 +49,10 @@ class Enemy(
     var attackCooldown: Float = 0f,
     var deathTimer: Float = 0f,
     var bobPhase: Float = (Math.random() * PI * 2).toFloat(),
-    var hitFlash: Float = 0f
+    var hitFlash: Float = 0f,
+    var deathRotX: Float = 0f,
+    var strafeDir: Float = if (Math.random() < 0.5) 1f else -1f,
+    var strafeTimer: Float = (Math.random() * 2f).toFloat()
 )
 
 data class Weapon(

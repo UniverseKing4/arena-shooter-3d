@@ -32,7 +32,7 @@ class GameRenderer(
     private val vp = FloatArray(16); private val model = FloatArray(16); private val mvp = FloatArray(16)
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.035f, 0.035f, 0.08f, 1f)
+        GLES20.glClearColor(0.05f, 0.05f, 0.12f, 1f)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         GLES20.glEnable(GLES20.GL_CULL_FACE)
         GLES20.glCullFace(GLES20.GL_BACK)
@@ -75,7 +75,7 @@ class GameRenderer(
             p.position.x + fwd.x, p.eyeY + fwd.y, p.position.z + fwd.z, 0f, 1f, 0f)
         Matrix.multiplyMM(vp, 0, proj, 0, view, 0)
 
-        useScene(); GLES20.glUniform3f(uLightDir, 0.35f, 0.85f, 0.25f)
+        useScene(); GLES20.glUniform3f(uLightDir, 0.4f, 0.9f, 0.3f)
         GLES20.glUniform3f(uCameraPos, p.position.x, p.eyeY, p.position.z)
         drawFloor(); drawWalls(); drawEnemies(); drawProjectiles(); drawPickups()
         drawParticles(); drawGunViewmodel(); drawDamageFlash(p.damageFlash)
@@ -86,7 +86,7 @@ class GameRenderer(
     private fun drawFloor() {
         useScene(); GLES20.glUniform1i(uTexType, 1)
         Matrix.setIdentityM(model, 0); Matrix.scaleM(model, 0, engine.arena.size, 1f, engine.arena.size)
-        setMats(); GLES20.glUniform3f(uColor, 0.1f, 0.1f, 0.17f)
+        setMats(); GLES20.glUniform3f(uColor, 0.18f, 0.2f, 0.28f)
         bindDraw(floorVerts, 6, 6)
     }
 
@@ -100,13 +100,13 @@ class GameRenderer(
             setMats()
             when {
                 i < engine.arena.outerWallCount -> {
-                    GLES20.glUniform1i(uTexType, 2); GLES20.glUniform3f(uColor, 0.14f, 0.12f, 0.26f)
+                    GLES20.glUniform1i(uTexType, 2); GLES20.glUniform3f(uColor, 0.4f, 0.2f, 0.14f)
                 }
                 i < engine.arena.pillarEndIndex -> {
-                    GLES20.glUniform1i(uTexType, 3); GLES20.glUniform3f(uColor, 0.18f, 0.22f, 0.35f)
+                    GLES20.glUniform1i(uTexType, 3); GLES20.glUniform3f(uColor, 0.3f, 0.35f, 0.48f)
                 }
                 else -> {
-                    GLES20.glUniform1i(uTexType, 4); GLES20.glUniform3f(uColor, 0.16f, 0.14f, 0.22f)
+                    GLES20.glUniform1i(uTexType, 4); GLES20.glUniform3f(uColor, 0.22f, 0.32f, 0.2f)
                 }
             }
             bindDraw(cubeVerts, cubeVC, 6)
@@ -116,16 +116,29 @@ class GameRenderer(
     private fun drawEnemies() {
         useScene()
         for (e in engine.enemies) {
-            val s = e.type.size; val bob = sin(e.bobPhase) * 0.08f
-            val alpha = if (e.state == EnemyState.DYING) (e.deathTimer / 0.5f).coerceIn(0f, 1f) else 1f
+            val s = e.type.size
+            val dying = e.state == EnemyState.DYING
+            val chasing = e.state == EnemyState.CHASE
+            val attacking = e.state == EnemyState.ATTACK
+            val bob = if (dying) 0f else sin(e.bobPhase) * 0.08f
+            val alpha = if (dying) (e.deathTimer / 1.2f).coerceIn(0f, 1f) else 1f
             val flash = e.hitFlash > 0f
             if (alpha < 1f) { GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA) }
             GLES20.glUniform1f(uAlpha, alpha); GLES20.glUniform1i(uTexType, 0)
 
+            val ex = e.position.x; val ez = e.position.z
+            val deathRot = if (dying) e.deathRotX else 0f
+            val leanFwd = if (chasing) -8f else if (attacking) -15f else 0f
+            val walkSpeed = if (chasing) e.bobPhase * 2.5f else e.bobPhase * 1.5f
+            val legSwing = if (dying) 0f else sin(walkSpeed) * 25f
+            val armSwing = if (dying) 0f else sin(e.bobPhase * 1.5f) * 18f
+
             // Body
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x, s * 0.55f + bob, e.position.z)
-            Matrix.scaleM(model, 0, s * 0.5f, s * 0.7f, s * 0.35f)
+            Matrix.translateM(model, 0, ex, s * 0.55f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+            Matrix.rotateM(model, 0, leanFwd, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.45f, s * 0.6f, s * 0.3f)
             setMats()
             if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
             else GLES20.glUniform3f(uColor, e.type.bodyR, e.type.bodyG, e.type.bodyB)
@@ -133,28 +146,53 @@ class GameRenderer(
 
             // Head
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x, s * 1.15f + bob, e.position.z)
-            Matrix.scaleM(model, 0, s * 0.3f, s * 0.3f, s * 0.3f)
+            Matrix.translateM(model, 0, ex, s * 1.05f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.28f, s * 0.28f, s * 0.28f)
             setMats()
             if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
             else GLES20.glUniform3f(uColor, e.type.headR, e.type.headG, e.type.headB)
             bindDraw(sphereVerts, sphereVC, 6)
 
+            val limbColor = if (flash) null else Triple(e.type.bodyR * 0.85f, e.type.bodyG * 0.85f, e.type.bodyB * 0.85f)
+
             // Left arm
-            val armSwing = sin(e.bobPhase * 1.5f) * 12f
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x - s * 0.38f, s * 0.85f + bob, e.position.z - s * 0.1f)
-            Matrix.rotateM(model, 0, -30f + armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.13f, s * 0.5f, s * 0.13f)
+            Matrix.translateM(model, 0, ex - s * 0.35f, s * 0.8f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+            Matrix.rotateM(model, 0, -35f + armSwing, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
             setMats()
-            if (!flash) GLES20.glUniform3f(uColor, e.type.bodyR * 0.85f, e.type.bodyG * 0.85f, e.type.bodyB * 0.85f)
+            if (limbColor != null) GLES20.glUniform3f(uColor, limbColor.first, limbColor.second, limbColor.third)
             bindDraw(cubeVerts, cubeVC, 6)
 
             // Right arm
             Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, e.position.x + s * 0.38f, s * 0.85f + bob, e.position.z - s * 0.1f)
-            Matrix.rotateM(model, 0, -30f - armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.13f, s * 0.5f, s * 0.13f)
+            Matrix.translateM(model, 0, ex + s * 0.35f, s * 0.8f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+            Matrix.rotateM(model, 0, -35f - armSwing, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
+            setMats()
+            bindDraw(cubeVerts, cubeVC, 6)
+
+            // Left leg
+            val legColor = if (flash) null else Triple(e.type.bodyR * 0.7f, e.type.bodyG * 0.7f, e.type.bodyB * 0.7f)
+            Matrix.setIdentityM(model, 0)
+            Matrix.translateM(model, 0, ex - s * 0.14f, s * 0.12f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot * 0.5f, 1f, 0f, 0f)
+            Matrix.rotateM(model, 0, legSwing, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
+            setMats()
+            if (legColor != null) GLES20.glUniform3f(uColor, legColor.first, legColor.second, legColor.third)
+            else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+            bindDraw(cubeVerts, cubeVC, 6)
+
+            // Right leg
+            Matrix.setIdentityM(model, 0)
+            Matrix.translateM(model, 0, ex + s * 0.14f, s * 0.12f + bob, ez)
+            if (dying) Matrix.rotateM(model, 0, deathRot * 0.5f, 1f, 0f, 0f)
+            Matrix.rotateM(model, 0, -legSwing, 1f, 0f, 0f)
+            Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
             setMats()
             bindDraw(cubeVerts, cubeVC, 6)
 
@@ -331,7 +369,7 @@ class GameRenderer(
             varying vec3 vWP; varying vec3 vN;
             void main(){
                 vec3 n=normalize(vN); vec3 l=normalize(uLightDir);
-                float amb=0.2; float diff=max(dot(n,l),0.0)*0.6;
+                float amb=0.28; float diff=max(dot(n,l),0.0)*0.55;
                 vec3 vd=normalize(uCameraPos-vWP); vec3 hd=normalize(l+vd);
                 float spec=pow(max(dot(n,hd),0.0),24.0)*0.3;
                 vec3 bc=uColor;
