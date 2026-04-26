@@ -24,9 +24,9 @@ class SoundManager(private val ctx: Context) {
             ids[1] = gen("shotgun", shot(0.18f, 350f, 0.9f))
             ids[2] = gen("rifle", shot(0.06f, 1400f, 0.45f))
             ids[3] = gen("hit", tone(0.05f, 2000f, 0.3f))
-            ids[4] = gen("kill", descTone(0.2f, 800f, 300f, 0.5f))
+            ids[4] = gen("kill", killSfx())
             ids[5] = gen("pickup", ascTone(0.18f, 600f, 1400f, 0.4f))
-            ids[6] = gen("hurt", shot(0.12f, 180f, 0.75f))
+            ids[6] = gen("hurt", hurtSfx())
             ids[7] = gen("wave", beeps(3, 0.06f, 1200f, 0.35f))
             ids[8] = gen("over", descTone(0.5f, 600f, 150f, 0.6f))
             ids[9] = gen("switch", tone(0.04f, 1600f, 0.25f))
@@ -87,6 +87,28 @@ class SoundManager(private val ctx: Context) {
                 val env = (1f - pos / bDur) * vol
                 o[i] = (sin(2f * PI.toFloat() * freq * pos) * env * 30000).toInt().coerceIn(-32768, 32767).toShort()
             }
+        }; return o
+    }
+
+    private fun hurtSfx(): ShortArray {
+        val r = 22050; val dur = 0.22f; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val env = (1f - p).pow(2f)
+            val bass = sin(2f * PI.toFloat() * 80f * t) * 0.5f
+            val mid = sin(2f * PI.toFloat() * 200f * t * (1f - p * 0.5f)) * 0.3f
+            val ns = (Random.nextFloat() * 2f - 1f) * 0.35f
+            o[i] = ((bass + mid + ns) * env * 0.85f * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
+    }
+
+    private fun killSfx(): ShortArray {
+        val r = 22050; val dur = 0.28f; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val env = (1f - p).pow(1.5f)
+            val crunch = sin(2f * PI.toFloat() * 600f * t * (1f - p * 0.7f)) * 0.4f
+            val thud = sin(2f * PI.toFloat() * 120f * t) * (1f - p) * 0.4f
+            val pop = if (p < 0.1f) sin(2f * PI.toFloat() * 1800f * t) * (1f - p / 0.1f) * 0.3f else 0f
+            o[i] = ((crunch + thud + pop) * env * 0.6f * 30000).toInt().coerceIn(-32768, 32767).toShort()
         }; return o
     }
 

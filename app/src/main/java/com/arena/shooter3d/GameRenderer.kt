@@ -32,7 +32,7 @@ class GameRenderer(
     private val vp = FloatArray(16); private val model = FloatArray(16); private val mvp = FloatArray(16)
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.05f, 0.05f, 0.12f, 1f)
+        GLES20.glClearColor(0.02f, 0.02f, 0.06f, 1f)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         GLES20.glEnable(GLES20.GL_CULL_FACE)
         GLES20.glCullFace(GLES20.GL_BACK)
@@ -86,7 +86,7 @@ class GameRenderer(
     private fun drawFloor() {
         useScene(); GLES20.glUniform1i(uTexType, 1)
         Matrix.setIdentityM(model, 0); Matrix.scaleM(model, 0, engine.arena.size, 1f, engine.arena.size)
-        setMats(); GLES20.glUniform3f(uColor, 0.18f, 0.2f, 0.28f)
+        setMats(); GLES20.glUniform3f(uColor, 0.25f, 0.2f, 0.15f)
         bindDraw(floorVerts, 6, 6)
     }
 
@@ -133,68 +133,127 @@ class GameRenderer(
             val legSwing = if (dying) 0f else sin(walkSpeed) * 25f
             val armSwing = if (dying) 0f else sin(e.bobPhase * 1.5f) * 18f
 
-            // Body
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex, s * 0.55f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
-            Matrix.rotateM(model, 0, leanFwd, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.45f, s * 0.6f, s * 0.3f)
-            setMats()
-            if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
-            else GLES20.glUniform3f(uColor, e.type.bodyR, e.type.bodyG, e.type.bodyB)
-            bindDraw(cubeVerts, cubeVC, 6)
-
-            // Head
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex, s * 1.05f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.28f, s * 0.28f, s * 0.28f)
-            setMats()
-            if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
-            else GLES20.glUniform3f(uColor, e.type.headR, e.type.headG, e.type.headB)
-            bindDraw(sphereVerts, sphereVC, 6)
-
             val limbColor = if (flash) null else Triple(e.type.bodyR * 0.85f, e.type.bodyG * 0.85f, e.type.bodyB * 0.85f)
-
-            // Left arm
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex - s * 0.35f, s * 0.8f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
-            Matrix.rotateM(model, 0, -35f + armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
-            setMats()
-            if (limbColor != null) GLES20.glUniform3f(uColor, limbColor.first, limbColor.second, limbColor.third)
-            bindDraw(cubeVerts, cubeVC, 6)
-
-            // Right arm
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex + s * 0.35f, s * 0.8f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
-            Matrix.rotateM(model, 0, -35f - armSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
-            setMats()
-            bindDraw(cubeVerts, cubeVC, 6)
-
-            // Left leg
             val legColor = if (flash) null else Triple(e.type.bodyR * 0.7f, e.type.bodyG * 0.7f, e.type.bodyB * 0.7f)
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex - s * 0.14f, s * 0.12f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot * 0.5f, 1f, 0f, 0f)
-            Matrix.rotateM(model, 0, legSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
-            setMats()
-            if (legColor != null) GLES20.glUniform3f(uColor, legColor.first, legColor.second, legColor.third)
-            else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
-            bindDraw(cubeVerts, cubeVC, 6)
 
-            // Right leg
-            Matrix.setIdentityM(model, 0)
-            Matrix.translateM(model, 0, ex + s * 0.14f, s * 0.12f + bob, ez)
-            if (dying) Matrix.rotateM(model, 0, deathRot * 0.5f, 1f, 0f, 0f)
-            Matrix.rotateM(model, 0, -legSwing, 1f, 0f, 0f)
-            Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
-            setMats()
-            bindDraw(cubeVerts, cubeVC, 6)
+            if (dying) {
+                // Body
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, 0f, s * 0.55f, 0f)
+                Matrix.scaleM(model, 0, s * 0.45f, s * 0.6f, s * 0.3f)
+                setMats()
+                if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                else GLES20.glUniform3f(uColor, e.type.bodyR, e.type.bodyG, e.type.bodyB)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Head
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, 0f, s * 1.05f, 0f)
+                Matrix.scaleM(model, 0, s * 0.28f, s * 0.28f, s * 0.28f)
+                setMats()
+                if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                else GLES20.glUniform3f(uColor, e.type.headR, e.type.headG, e.type.headB)
+                bindDraw(sphereVerts, sphereVC, 6)
+
+                // Left arm
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, -s * 0.35f, s * 0.8f, 0f)
+                Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
+                setMats()
+                if (limbColor != null) GLES20.glUniform3f(uColor, limbColor.first, limbColor.second, limbColor.third)
+                else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Right arm
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, s * 0.35f, s * 0.8f, 0f)
+                Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
+                setMats()
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Left leg
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, -s * 0.14f, s * 0.12f, 0f)
+                Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
+                setMats()
+                if (legColor != null) GLES20.glUniform3f(uColor, legColor.first, legColor.second, legColor.third)
+                else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Right leg
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, 0f, ez)
+                Matrix.rotateM(model, 0, deathRot, 1f, 0f, 0f)
+                Matrix.translateM(model, 0, s * 0.14f, s * 0.12f, 0f)
+                Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
+                setMats()
+                bindDraw(cubeVerts, cubeVC, 6)
+            } else {
+                // Body
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, s * 0.55f + bob, ez)
+                Matrix.rotateM(model, 0, leanFwd, 1f, 0f, 0f)
+                Matrix.scaleM(model, 0, s * 0.45f, s * 0.6f, s * 0.3f)
+                setMats()
+                if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                else GLES20.glUniform3f(uColor, e.type.bodyR, e.type.bodyG, e.type.bodyB)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Head
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex, s * 1.05f + bob, ez)
+                Matrix.scaleM(model, 0, s * 0.28f, s * 0.28f, s * 0.28f)
+                setMats()
+                if (flash) GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                else GLES20.glUniform3f(uColor, e.type.headR, e.type.headG, e.type.headB)
+                bindDraw(sphereVerts, sphereVC, 6)
+
+                // Left arm
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex - s * 0.35f, s * 0.8f + bob, ez)
+                Matrix.rotateM(model, 0, -35f + armSwing, 1f, 0f, 0f)
+                Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
+                setMats()
+                if (limbColor != null) GLES20.glUniform3f(uColor, limbColor.first, limbColor.second, limbColor.third)
+                else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Right arm
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex + s * 0.35f, s * 0.8f + bob, ez)
+                Matrix.rotateM(model, 0, -35f - armSwing, 1f, 0f, 0f)
+                Matrix.scaleM(model, 0, s * 0.12f, s * 0.45f, s * 0.12f)
+                setMats()
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Left leg
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex - s * 0.14f, s * 0.12f + bob, ez)
+                Matrix.rotateM(model, 0, legSwing, 1f, 0f, 0f)
+                Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
+                setMats()
+                if (legColor != null) GLES20.glUniform3f(uColor, legColor.first, legColor.second, legColor.third)
+                else GLES20.glUniform3f(uColor, 1f, 1f, 1f)
+                bindDraw(cubeVerts, cubeVC, 6)
+
+                // Right leg
+                Matrix.setIdentityM(model, 0)
+                Matrix.translateM(model, 0, ex + s * 0.14f, s * 0.12f + bob, ez)
+                Matrix.rotateM(model, 0, -legSwing, 1f, 0f, 0f)
+                Matrix.scaleM(model, 0, s * 0.14f, s * 0.38f, s * 0.14f)
+                setMats()
+                bindDraw(cubeVerts, cubeVC, 6)
+            }
 
             if (alpha < 1f) { GLES20.glDisable(GLES20.GL_BLEND) }
             GLES20.glUniform1f(uAlpha, 1f)
@@ -293,11 +352,30 @@ class GameRenderer(
         GLES20.glUseProgram(hudProgram); GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         val o = FloatArray(16); Matrix.orthoM(o, 0, 0f, screenW.toFloat(), screenH.toFloat(), 0f, -1f, 1f)
-        GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0); GLES20.glUniform4f(huColor, 0.75f, 0f, 0f, amt * 0.45f)
+        GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0)
         val w = screenW.toFloat(); val h = screenH.toFloat()
+
+        GLES20.glUniform4f(huColor, 0.8f, 0f, 0f, amt * 0.5f)
         val d = floatArrayOf(0f,0f,w,0f,w,h,0f,0f,w,h,0f,h); val buf = fbuf(d)
         GLES20.glEnableVertexAttribArray(haPos); GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, buf)
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6); GLES20.glDisableVertexAttribArray(haPos)
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+
+        val edge = w * 0.18f; val edgeH = h * 0.18f
+        GLES20.glUniform4f(huColor, 0.9f, 0f, 0f, amt * 0.55f)
+        val lv = floatArrayOf(0f,0f,edge,0f,edge,h,0f,0f,edge,h,0f,h)
+        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, fbuf(lv))
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+        val rv = floatArrayOf(w-edge,0f,w,0f,w,h,w-edge,0f,w,h,w-edge,h)
+        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, fbuf(rv))
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+        val tv = floatArrayOf(0f,0f,w,0f,w,edgeH,0f,0f,w,edgeH,0f,edgeH)
+        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, fbuf(tv))
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+        val bv = floatArrayOf(0f,h-edgeH,w,h-edgeH,w,h,0f,h-edgeH,w,h,0f,h)
+        GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, fbuf(bv))
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
+
+        GLES20.glDisableVertexAttribArray(haPos)
         GLES20.glDisable(GLES20.GL_BLEND); GLES20.glEnable(GLES20.GL_DEPTH_TEST)
     }
 

@@ -64,14 +64,14 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         val cx = w / 2f; val cy = h / 2f
 
         p.color = 0xE0FFFFFF.toInt()
-        val g = 10f; val s = 26f; val t = 2.5f
+        val g = 7f; val s = 18f; val t = 2f
         canvas.drawRect(cx - s, cy - t, cx - g, cy + t, p)
         canvas.drawRect(cx + g, cy - t, cx + s, cy + t, p)
         canvas.drawRect(cx - t, cy - s, cx + t, cy - g, p)
         canvas.drawRect(cx - t, cy + g, cx + t, cy + s, p)
 
         p.color = 0xFFFFFFFF.toInt()
-        canvas.drawCircle(cx, cy, 3f, p)
+        canvas.drawCircle(cx, cy, 2.5f, p)
     }
 
     private fun drawJoystick(canvas: Canvas) {
@@ -143,13 +143,24 @@ class HUDView(context: Context, private val input: InputController) : View(conte
 
     private fun drawHealthBar(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
         val barW = 200f; val barH = 16f; val x = 30f; val y = h - 48f
-        p.color = 0x55000000.toInt(); canvas.drawRoundRect(x, y, x + barW, y + barH, 4f, 4f, p)
+        val dmgShake = if (hs.damageFlash > 0.1f) (sin(hs.damageFlash * 40f) * hs.damageFlash * 6f) else 0f
+        val sx = x + dmgShake
+        if (hs.damageFlash > 0.3f) {
+            p.color = 0x55FF1744.toInt()
+            canvas.drawRoundRect(sx - 4f, y - 4f, sx + barW + 4f, y + barH + 4f, 6f, 6f, p)
+        }
+        p.color = 0x55000000.toInt(); canvas.drawRoundRect(sx, y, sx + barW, y + barH, 4f, 4f, p)
         val ratio = hs.health.toFloat() / hs.maxHealth
         p.color = when { ratio > 0.6f -> 0xFF4CAF50.toInt(); ratio > 0.3f -> 0xFFFFC107.toInt(); else -> 0xFFFF1744.toInt() }
-        canvas.drawRoundRect(x + 2, y + 2, x + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
+        canvas.drawRoundRect(sx + 2, y + 2, sx + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
+        if (ratio <= 0.3f && ratio > 0f) {
+            val pulse = (sin(System.currentTimeMillis() / 200f) * 0.3f + 0.7f).coerceIn(0f, 1f)
+            p.color = Color.argb((pulse * 80).toInt(), 255, 23, 68)
+            canvas.drawRoundRect(sx + 2, y + 2, sx + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
+        }
         tp.textSize = 24f; tp.color = Color.WHITE
-        canvas.drawText("${hs.health}", x + barW + 10, y + barH - 1, tp)
-        tp.textSize = 18f; tp.color = 0xFFB0BEC5.toInt(); canvas.drawText("HP", x, y - 5, tp)
+        canvas.drawText("${hs.health}", sx + barW + 10, y + barH - 1, tp)
+        tp.textSize = 18f; tp.color = 0xFFB0BEC5.toInt(); canvas.drawText("HP", sx, y - 5, tp)
     }
 
     private fun drawAmmo(canvas: Canvas, h: Float, hs: HUDState) {
@@ -163,7 +174,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         val rx = w - 18f; val top = 95f
         p.color = 0x44000000.toInt()
         canvas.drawRoundRect(rx - 130f, top - 18f, rx + 5f, top + 50f, 6f, 6f, p)
-        scoreP.textSize = 16f; scoreP.color = 0xFFB0BEC5.toInt()
+        scoreP.textSize = 22f; scoreP.color = 0xFFB0BEC5.toInt()
         canvas.drawText("SCORE", rx, top, scoreP)
         scoreP.textSize = 36f; scoreP.color = Color.WHITE
         canvas.drawText("${hs.score}", rx, top + 38f, scoreP)

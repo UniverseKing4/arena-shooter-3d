@@ -251,7 +251,7 @@ class GameEngine {
                     if (e.stateTimer <= 0f) {
                         if (player.position.distTo(e.position) < e.type.attackRange + 0.5f) {
                             player.health -= e.type.damage
-                            player.damageFlash = 0.55f; player.screenShake = 0.25f
+                            player.damageFlash = 0.85f; player.screenShake = 0.45f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
                         e.attackCooldown = 1.0f; e.state = EnemyState.CHASE
