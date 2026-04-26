@@ -22,15 +22,15 @@ class InputController {
     private var screenW = 1f; private var screenH = 1f
     private val lookSensitivity = 0.005f
 
-    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 82f
+    var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 110f
     var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 40f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
     val joyOuterRadius = 100f; val joyInnerRadius = 38f
 
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
-        fireBtnX = screenW - 260f; fireBtnY = screenH - 200f
-        switchBtnX = screenW - 260f; switchBtnY = screenH - 350f
+        fireBtnX = screenW - 340f; fireBtnY = screenH - 260f
+        switchBtnX = screenW - 340f; switchBtnY = screenH - 430f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
 

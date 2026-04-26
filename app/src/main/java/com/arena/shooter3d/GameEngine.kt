@@ -206,14 +206,23 @@ class GameEngine {
                         val dir = toPlayer.normalized()
                         var nx = e.position.x + dir.x * e.type.speed * dt
                         var nz = e.position.z + dir.z * e.type.speed * dt
-                        for (pass in 0 until 2) {
+                        val er = e.type.size * 0.5f
+                        for (pass in 0 until 3) {
                             for (w in arena.walls) {
-                                val hs = e.type.size * 0.5f
-                                if (nx + hs > w.minX && nx - hs < w.maxX && nz + hs > w.minZ && nz - hs < w.maxZ) {
-                                    val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
-                                    val hw = (w.maxX - w.minX) / 2f + hs; val hz = (w.maxZ - w.minZ) / 2f + hs
-                                    if (abs(nx - cx) / hw > abs(nz - cz) / hz) nx = cx + if (nx > cx) hw else -hw
-                                    else nz = cz + if (nz > cz) hz else -hz
+                                val clx = nx.coerceIn(w.minX, w.maxX)
+                                val clz = nz.coerceIn(w.minZ, w.maxZ)
+                                val edx = nx - clx; val edz = nz - clz
+                                val dSq = edx * edx + edz * edz
+                                if (dSq < er * er) {
+                                    if (dSq > 0.0001f) {
+                                        val d = sqrt(dSq); val ov = er - d
+                                        nx += (edx / d) * ov; nz += (edz / d) * ov
+                                    } else {
+                                        val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
+                                        val hw = (w.maxX - w.minX) / 2f + er; val hz = (w.maxZ - w.minZ) / 2f + er
+                                        if (abs(nx - cx) / hw > abs(nz - cz) / hz) nx = cx + if (nx > cx) hw else -hw
+                                        else nz = cz + if (nz > cz) hz else -hz
+                                    }
                                 }
                             }
                         }
@@ -305,16 +314,27 @@ class GameEngine {
     }
 
     private fun resolvePlayerWallCollision() {
-        val pr = 0.45f
-        for (pass in 0 until 3) {
+        val pr = 0.5f
+        for (pass in 0 until 4) {
             for (w in arena.walls) {
                 val px = player.position.x; val pz = player.position.z
-                if (px + pr > w.minX && px - pr < w.maxX && pz + pr > w.minZ && pz - pr < w.maxZ) {
-                    val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
-                    val hw = (w.maxX - w.minX) / 2f + pr; val hz = (w.maxZ - w.minZ) / 2f + pr
-                    val ox = px - cx; val oz = pz - cz
-                    if (abs(ox) / hw > abs(oz) / hz) player.position.x = cx + if (ox > 0) hw else -hw
-                    else player.position.z = cz + if (oz > 0) hz else -hz
+                val closestX = px.coerceIn(w.minX, w.maxX)
+                val closestZ = pz.coerceIn(w.minZ, w.maxZ)
+                val dx = px - closestX; val dz = pz - closestZ
+                val distSq = dx * dx + dz * dz
+                if (distSq < pr * pr) {
+                    if (distSq > 0.0001f) {
+                        val dist = sqrt(distSq)
+                        val overlap = pr - dist
+                        player.position.x += (dx / dist) * overlap
+                        player.position.z += (dz / dist) * overlap
+                    } else {
+                        val cx = (w.minX + w.maxX) / 2f; val cz = (w.minZ + w.maxZ) / 2f
+                        val hw = (w.maxX - w.minX) / 2f + pr; val hz = (w.maxZ - w.minZ) / 2f + pr
+                        val ox = px - cx; val oz = pz - cz
+                        if (abs(ox) / hw > abs(oz) / hz) player.position.x = cx + if (ox > 0) hw else -hw
+                        else player.position.z = cz + if (oz > 0) hz else -hz
+                    }
                 }
             }
         }
