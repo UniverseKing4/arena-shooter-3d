@@ -238,17 +238,20 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawDamageVignette(canvas: Canvas, w: Float, h: Float, amt: Float) {
-        val alpha = (amt * 180).toInt().coerceIn(0, 180)
-        p.color = Color.argb(alpha, 200, 10, 10)
-        canvas.drawRect(0f, 0f, w, h, p)
+        val a = (amt * 140).toInt().coerceIn(0, 140)
+        val red = Color.argb(a, 220, 0, 0)
+        val clear = Color.argb(0, 220, 0, 0)
+        val edgeW = w * 0.18f; val edgeH = h * 0.18f
 
-        val edgeAlpha = (amt * 220).toInt().coerceIn(0, 220)
-        val edgeW = w * 0.25f; val edgeH = h * 0.25f
-        p.color = Color.argb(edgeAlpha, 255, 0, 0)
+        p.shader = LinearGradient(0f, 0f, edgeW, 0f, red, clear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(0f, 0f, edgeW, h, p)
+        p.shader = LinearGradient(w, 0f, w - edgeW, 0f, red, clear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(w - edgeW, 0f, w, h, p)
+        p.shader = LinearGradient(0f, 0f, 0f, edgeH, red, clear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(0f, 0f, w, edgeH, p)
+        p.shader = LinearGradient(0f, h, 0f, h - edgeH, red, clear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(0f, h - edgeH, w, h, p)
+        p.shader = null
     }
 
     private fun drawSprintIndicator(canvas: Canvas, w: Float, h: Float) {

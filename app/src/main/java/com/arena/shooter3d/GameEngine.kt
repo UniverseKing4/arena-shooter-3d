@@ -79,21 +79,23 @@ class GameEngine {
 
         player.velocityY -= 22f * dt
         player.position.y += player.velocityY * dt
-        var landedOnWall = false
-        if (player.velocityY <= 0f) {
-            for (w in arena.walls) {
-                if (w.height > 3f) continue
-                val px = player.position.x; val pz = player.position.z
-                if (px > w.minX - 0.3f && px < w.maxX + 0.3f && pz > w.minZ - 0.3f && pz < w.maxZ + 0.3f) {
-                    if (player.position.y <= w.height && player.position.y > w.height - 0.5f) {
-                        player.position.y = w.height; player.velocityY = 0f; player.isGrounded = true
-                        landedOnWall = true; break
-                    }
+
+        var supportHeight = 0f
+        for (w in arena.walls) {
+            if (w.height > 3f) continue
+            val px = player.position.x; val pz = player.position.z
+            if (px > w.minX - 0.4f && px < w.maxX + 0.4f && pz > w.minZ - 0.4f && pz < w.maxZ + 0.4f) {
+                if (player.position.y <= w.height + 0.1f && player.position.y > w.height - 2f) {
+                    if (w.height > supportHeight) supportHeight = w.height
                 }
             }
         }
-        if (!landedOnWall && player.position.y <= 0f) {
+        if (player.position.y <= supportHeight) {
+            player.position.y = supportHeight; player.velocityY = 0f; player.isGrounded = true
+        } else if (player.position.y <= 0f) {
             player.position.y = 0f; player.velocityY = 0f; player.isGrounded = true
+        } else if (player.velocityY < 0f && player.position.y > supportHeight + 0.1f && supportHeight == 0f) {
+            player.isGrounded = false
         }
 
         isSprinting = input.isSprinting
@@ -414,7 +416,7 @@ class GameEngine {
         val pr = 0.5f
         for (pass in 0 until 4) {
             for (w in arena.walls) {
-                if (player.position.y > w.height) continue
+                if (player.position.y >= w.height) continue
                 val px = player.position.x; val pz = player.position.z
                 val closestX = px.coerceIn(w.minX, w.maxX)
                 val closestZ = pz.coerceIn(w.minZ, w.maxZ)

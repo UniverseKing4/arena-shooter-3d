@@ -78,7 +78,7 @@ class GameRenderer(
         useScene(); GLES20.glUniform3f(uLightDir, 0.4f, 0.9f, 0.3f)
         GLES20.glUniform3f(uCameraPos, p.position.x, p.eyeY, p.position.z)
         drawFloor(); drawWalls(); drawEnemies(); drawProjectiles(); drawPickups()
-        drawParticles(); drawGunViewmodel(); drawDamageFlash(p.damageFlash)
+        drawParticles(); drawGunViewmodel()
     }
 
     private fun useScene() { GLES20.glUseProgram(sceneProgram); GLES20.glUniform1f(uAlpha, 1f); GLES20.glUniform1i(uTexType, 0) }
