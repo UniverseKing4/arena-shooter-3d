@@ -103,7 +103,7 @@ class GameEngine {
         player.fireCooldown -= dt
         if (input.isFiring && player.fireCooldown <= 0f && player.swapPhase == 0) fireWeapon()
 
-        player.damageFlash = (player.damageFlash - dt * 3f).coerceAtLeast(0f)
+        player.damageFlash = (player.damageFlash - dt * 2f).coerceAtLeast(0f)
         player.screenShake = (player.screenShake - dt * 5f).coerceAtLeast(0f)
     }
 
@@ -307,7 +307,7 @@ class GameEngine {
                     if (e.stateTimer <= 0f) {
                         if (player.position.distTo(e.position) < e.type.attackRange + 0.5f) {
                             player.health -= e.type.damage
-                            player.damageFlash = 0.85f; player.screenShake = 0.45f
+                            player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
                         e.attackCooldown = 1.0f; e.state = EnemyState.CHASE
@@ -401,6 +401,7 @@ class GameEngine {
         val pr = 0.5f
         for (pass in 0 until 4) {
             for (w in arena.walls) {
+                if (player.position.y > w.height) continue
                 val px = player.position.x; val pz = player.position.z
                 val closestX = px.coerceIn(w.minX, w.maxX)
                 val closestZ = pz.coerceIn(w.minZ, w.maxZ)

@@ -355,13 +355,13 @@ class GameRenderer(
         GLES20.glUniformMatrix4fv(huMVP, 1, false, o, 0)
         val w = screenW.toFloat(); val h = screenH.toFloat()
 
-        GLES20.glUniform4f(huColor, 0.8f, 0f, 0f, amt * 0.5f)
+        GLES20.glUniform4f(huColor, 0.9f, 0.02f, 0.02f, amt * 0.7f)
         val d = floatArrayOf(0f,0f,w,0f,w,h,0f,0f,w,h,0f,h); val buf = fbuf(d)
         GLES20.glEnableVertexAttribArray(haPos); GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, buf)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
 
-        val edge = w * 0.18f; val edgeH = h * 0.18f
-        GLES20.glUniform4f(huColor, 0.9f, 0f, 0f, amt * 0.55f)
+        val edge = w * 0.22f; val edgeH = h * 0.22f
+        GLES20.glUniform4f(huColor, 1f, 0f, 0f, amt * 0.8f)
         val lv = floatArrayOf(0f,0f,edge,0f,edge,h,0f,0f,edge,h,0f,h)
         GLES20.glVertexAttribPointer(haPos, 2, GLES20.GL_FLOAT, false, 0, fbuf(lv))
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)

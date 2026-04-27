@@ -263,16 +263,22 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     private fun drawGameOver(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
         p.color = 0xCC0A0A1A.toInt(); canvas.drawRect(0f, 0f, w, h, p)
         titleP.textSize = 64f; titleP.color = 0xFFFF1744.toInt()
-        canvas.drawText("GAME OVER", w / 2, h * 0.3f, titleP)
+        canvas.drawText("GAME OVER", w / 2, h * 0.28f, titleP)
         subP.color = Color.WHITE; subP.textSize = 36f
-        canvas.drawText("SCORE: ${hs.score}", w / 2, h * 0.45f, subP)
+        canvas.drawText("SCORE: ${hs.score}", w / 2, h * 0.42f, subP)
         subP.textSize = 26f; subP.color = 0xFF00E5FF.toInt()
-        canvas.drawText("WAVE ${hs.wave}  |  ${hs.kills} KILLS  |  ${hs.headshots} HEADSHOTS", w / 2, h * 0.55f, subP)
+        canvas.drawText("WAVE ${hs.wave}  |  ${hs.kills} KILLS  |  ${hs.headshots} HEADSHOTS", w / 2, h * 0.52f, subP)
         if (hs.score >= hs.highScore && hs.score > 0) {
-            subP.color = 0xFFFFC107.toInt(); canvas.drawText("NEW HIGH SCORE!", w / 2, h * 0.64f, subP)
+            subP.color = 0xFFFFC107.toInt(); canvas.drawText("NEW HIGH SCORE!", w / 2, h * 0.61f, subP)
         }
-        subP.color = Color.WHITE; subP.textSize = 28f
-        canvas.drawText("TAP TO RESTART", w / 2, h * 0.76f, subP)
+
+        val btnX = w / 2; val btnY = h * 0.74f; val btnW = 220f; val btnH = 60f
+        p.color = 0xFFFF1744.toInt()
+        canvas.drawRoundRect(btnX - btnW, btnY - btnH / 2, btnX + btnW, btnY + btnH / 2, 12f, 12f, p)
+        p.color = 0x33FFFFFF.toInt()
+        canvas.drawRoundRect(btnX - btnW + 3, btnY - btnH / 2 + 3, btnX + btnW - 3, btnY + btnH / 2 - 3, 10f, 10f, p)
+        subP.color = Color.WHITE; subP.textSize = 34f
+        canvas.drawText("RESTART", btnX, btnY + 12f, subP)
     }
 
     private fun ic() = input

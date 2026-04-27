@@ -34,7 +34,7 @@ class InputController {
         screenW = w.toFloat(); screenH = h.toFloat()
         fireBtnX = screenW - 480f; fireBtnY = screenH - 340f
         switchBtnX = fireBtnX - 100f; switchBtnY = screenH - 120f
-        jumpBtnX = fireBtnX + 200f; jumpBtnY = fireBtnY - 200f
+        jumpBtnX = fireBtnX + 200f; jumpBtnY = fireBtnY + 200f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
 
@@ -74,7 +74,7 @@ class InputController {
                     joyX = dx / joyOuterRadius; joyY = dy / joyOuterRadius
                     joyThumbX = x; joyThumbY = y
                 }
-                isSprinting = joyY < -0.8f
+                isSprinting = joyY < -0.93f
             }
             lookPointerId -> {
                 lookDeltaX += (x - lastLookX) * lookSensitivity

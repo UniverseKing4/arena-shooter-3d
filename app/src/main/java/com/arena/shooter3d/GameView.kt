@@ -50,7 +50,14 @@ class GameView(
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 when (engine.gameState) {
                     GameState.MENU -> { engine.startGame(); return true }
-                    GameState.GAME_OVER -> { engine.startGame(); return true }
+                    GameState.GAME_OVER -> {
+                        val btnX = width / 2f; val btnY = height * 0.74f
+                        val btnW = 220f; val btnH = 60f
+                        if (x > btnX - btnW && x < btnX + btnW && y > btnY - btnH / 2 && y < btnY + btnH / 2) {
+                            engine.startGame()
+                        }
+                        return true
+                    }
                     GameState.PAUSED -> {
                         if (input.pauseBtnX - input.pauseBtnRadius - 12 < x &&
                             x < input.pauseBtnX + input.pauseBtnRadius + 12 &&
