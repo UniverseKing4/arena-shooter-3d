@@ -52,8 +52,10 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         drawJoystick(canvas)
         drawFireButton(canvas, w, h, hs)
         drawJumpButton(canvas, w, h)
+        drawReloadButton(canvas, w, h, hs)
         drawWeaponSwitch(canvas, w, h, hs)
         drawPauseBtn(canvas, w)
+        if (hs.isReloading) drawReloadingIndicator(canvas, w, h, hs)
         drawHealthBar(canvas, w, h, hs)
         drawAmmo(canvas, h, hs)
         drawScore(canvas, w, hs)
@@ -167,8 +169,12 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawAmmo(canvas: Canvas, h: Float, hs: HUDState) {
-        tp.textSize = 40f; tp.color = Color.WHITE
-        canvas.drawText(if (hs.ammo == -1) "INF" else "${hs.ammo}", 30f, h - 120f, tp)
+        tp.textSize = 44f; tp.color = Color.WHITE
+        val magText = "${hs.magCurrent}"
+        canvas.drawText(magText, 30f, h - 125f, tp)
+        val magWidth = tp.measureText(magText)
+        tp.textSize = 28f; tp.color = 0xFFB0BEC5.toInt()
+        canvas.drawText(" / ${hs.reserveAmmo}", 30f + magWidth, h - 125f, tp)
         tp.textSize = 22f; tp.color = 0xFF00E5FF.toInt()
         canvas.drawText(hs.weaponName, 30f, h - 88f, tp)
     }
@@ -297,6 +303,25 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         canvas.drawRoundRect(btnX - btnW + 3, btnY - btnH / 2 + 3, btnX + btnW - 3, btnY + btnH / 2 - 3, 10f, 10f, p)
         subP.color = Color.WHITE; subP.textSize = 34f
         canvas.drawText("RESTART", btnX, btnY + 12f, subP)
+    }
+
+    private fun drawReloadButton(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        val bx = ic().reloadBtnX; val by = ic().reloadBtnY; val br = ic().reloadBtnRadius
+        p.color = 0x44FFC107.toInt(); canvas.drawCircle(bx, by, br, p)
+        p.color = 0x66FFC107.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 3f
+        canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
+        tp.textSize = 20f; tp.color = 0xDDFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("RELOAD", bx, by + 7, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawReloadingIndicator(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        val cx = w / 2f; val cy = h / 2f - 50f
+        tp.textSize = 22f; tp.color = 0xDDFFC107.toInt(); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("RELOADING", cx, cy, tp); tp.textAlign = Paint.Align.LEFT
+        val barW = 120f; val barH = 6f
+        val bx = cx - barW / 2f; val by = cy + 8f
+        p.color = 0x55FFFFFF.toInt(); canvas.drawRoundRect(bx, by, bx + barW, by + barH, 3f, 3f, p)
+        p.color = 0xDDFFC107.toInt(); canvas.drawRoundRect(bx, by, bx + barW * hs.reloadProgress, by + barH, 3f, 3f, p)
     }
 
     private fun ic() = input

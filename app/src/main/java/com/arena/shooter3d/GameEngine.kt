@@ -67,7 +67,32 @@ class GameEngine {
         player.yaw += ldx
         player.pitch = (player.pitch + ldy).coerceIn(-1.2f, 1.2f)
 
-        if (input.consumeWeaponSwitch() && player.swapPhase == 0) {
+        if (input.consumeReload() && !player.isReloading && player.swapPhase == 0) {
+            val w = player.weapon
+            if (player.mag[player.currentWeapon] < w.magSize && player.reserve[player.currentWeapon] > 0) {
+                player.isReloading = true
+                player.reloadTimer = 0f
+                player.reloadDuration = w.reloadTime
+                soundEvents.add(SoundEvent.RELOAD)
+            }
+        }
+
+        if (player.isReloading) {
+            player.reloadTimer += dt
+            player.reloadDip = sin(player.reloadTimer / player.reloadDuration * PI.toFloat()) * 0.3f
+            if (player.reloadTimer >= player.reloadDuration) {
+                val w = player.weapon
+                val needed = w.magSize - player.mag[player.currentWeapon]
+                val toReload = needed.coerceAtMost(player.reserve[player.currentWeapon])
+                player.mag[player.currentWeapon] += toReload
+                player.reserve[player.currentWeapon] -= toReload
+                player.isReloading = false
+                player.reloadTimer = 0f
+                player.reloadDip = 0f
+            }
+        }
+
+        if (input.consumeWeaponSwitch() && player.swapPhase == 0 && !player.isReloading) {
             player.pendingWeapon = (player.currentWeapon + 1) % player.weapons.size
             player.swapPhase = 1; player.gunSwapProgress = 0f
             soundEvents.add(SoundEvent.WEAPON_SWITCH)
@@ -116,7 +141,7 @@ class GameEngine {
         player.position.z = player.position.z.coerceIn(-h, h)
 
         player.fireCooldown -= dt
-        if (input.isFiring && player.fireCooldown <= 0f && player.swapPhase == 0) fireWeapon()
+        if (input.isFiring && player.fireCooldown <= 0f && player.swapPhase == 0 && !player.isReloading) fireWeapon()
 
         player.damageFlash = (player.damageFlash - dt * 2f).coerceAtLeast(0f)
         player.screenShake = (player.screenShake - dt * 5f).coerceAtLeast(0f)
@@ -147,9 +172,9 @@ class GameEngine {
 
     private fun fireWeapon() {
         val w = player.weapon
-        if (w.maxAmmo > 0 && player.ammo[player.currentWeapon] <= 0) return
+        if (player.mag[player.currentWeapon] <= 0) return
         player.fireCooldown = w.fireRate
-        if (w.maxAmmo > 0) player.ammo[player.currentWeapon]--
+        player.mag[player.currentWeapon]--
         player.gunRecoil = 1f; player.muzzleFlash = 1f; player.screenShake = 0.12f
 
         val dir = player.forward()
@@ -349,8 +374,8 @@ class GameEngine {
                         }
                     }
                     PickupType.AMMO -> {
-                        player.ammo[1] = (player.ammo[1] + 8).coerceAtMost(64)
-                        player.ammo[2] = (player.ammo[2] + 35).coerceAtMost(400)
+                        player.reserve[1] = (player.reserve[1] + 18).coerceAtMost(64)
+                        player.reserve[2] = (player.reserve[2] + 90).coerceAtMost(300)
                         p.active = false; p.respawnTimer = 15f
                         soundEvents.add(SoundEvent.PICKUP_AMMO)
                         spawnPickupFX(p.position, p.type)
@@ -462,8 +487,11 @@ class GameEngine {
     fun getHUDState(): HUDState {
         val ep = enemies.filter { it.state != EnemyState.DYING }.map { it.position.x to it.position.z }
         val pp = pickups.map { Triple(it.position.x, it.position.z, if (it.active) it.type.ordinal else -1) }
+        val reloadProgress = if (player.isReloading) (player.reloadTimer / player.reloadDuration).coerceIn(0f, 1f) else 0f
         return HUDState(player.health, player.maxHealth,
-            player.ammo[player.currentWeapon], player.weapon.name, player.currentWeapon,
+            player.mag[player.currentWeapon], player.weapon.magSize, player.reserve[player.currentWeapon],
+            player.weapon.name, player.currentWeapon,
+            player.isReloading, reloadProgress,
             score, highScore, wave, combo, comboTimer, player.damageFlash, gameState,
             enemies.count { it.state != EnemyState.DYING },
             player.position.x, player.position.z, player.yaw,

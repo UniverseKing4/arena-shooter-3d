@@ -24,7 +24,7 @@ enum class SoundEvent {
     HIT_ENEMY, KILL_ENEMY, HEADSHOT,
     PICKUP_HEALTH, PICKUP_AMMO,
     PLAYER_HURT, WAVE_START, GAME_OVER,
-    WEAPON_SWITCH
+    WEAPON_SWITCH, RELOAD
 }
 
 enum class EnemyType(
@@ -56,7 +56,8 @@ class Enemy(
 )
 
 data class Weapon(
-    val name: String, val damage: Int, val fireRate: Float, val maxAmmo: Int,
+    val name: String, val damage: Int, val fireRate: Float,
+    val magSize: Int, val reloadTime: Float,
     val spread: Float, val projectileSpeed: Float, val pellets: Int = 1,
     val r: Float, val g: Float, val b: Float
 )
@@ -73,12 +74,14 @@ class Player {
     var health = 100; val maxHealth = 100
     var velocityY = 0f; var isGrounded = true
     val weapons = arrayOf(
-        Weapon("PISTOL", 22, 0.35f, -1, 0.015f, 38f, 1, 1f, 1f, 0.4f),
-        Weapon("SHOTGUN", 15, 0.75f, 24, 0.1f, 30f, 5, 1f, 0.7f, 0.25f),
-        Weapon("RIFLE", 11, 0.1f, 150, 0.035f, 48f, 1, 0.4f, 0.85f, 1f)
+        Weapon("PISTOL", 22, 0.25f, 12, 1.2f, 0.015f, 38f, 1, 1f, 1f, 0.4f),
+        Weapon("SHOTGUN", 15, 0.8f, 6, 2.0f, 0.1f, 30f, 5, 1f, 0.7f, 0.25f),
+        Weapon("RIFLE", 11, 0.1f, 30, 1.8f, 0.035f, 48f, 1, 0.4f, 0.85f, 1f)
     )
     var currentWeapon = 0
-    var ammo = intArrayOf(-1, 24, 150)
+    var mag = intArrayOf(12, 6, 30)
+    var reserve = intArrayOf(999, 24, 120)
+    var isReloading = false; var reloadTimer = 0f; var reloadDuration = 0f
     var fireCooldown = 0f
     var damageFlash = 0f; var screenShake = 0f; var kills = 0
 
@@ -88,6 +91,7 @@ class Player {
     var swapPhase = 0
     var pendingWeapon = -1
     var muzzleFlash = 0f
+    var reloadDip = 0f
 
     val weapon get() = weapons[currentWeapon]
     val eyeY get() = 1.6f + position.y
@@ -101,10 +105,12 @@ class Player {
 
     fun reset() {
         position = Vec3(0f, 0f, 0f); yaw = 0f; pitch = 0f
-        health = maxHealth; currentWeapon = 0; ammo = intArrayOf(-1, 24, 150)
+        health = maxHealth; currentWeapon = 0
+        mag = intArrayOf(12, 6, 30); reserve = intArrayOf(999, 24, 120)
+        isReloading = false; reloadTimer = 0f; reloadDuration = 0f
         fireCooldown = 0f; damageFlash = 0f; screenShake = 0f; kills = 0
         gunRecoil = 0f; gunSwapProgress = 0f; gunBobPhase = 0f
-        swapPhase = 0; pendingWeapon = -1; muzzleFlash = 0f
+        swapPhase = 0; pendingWeapon = -1; muzzleFlash = 0f; reloadDip = 0f
         velocityY = 0f; isGrounded = true
     }
 
@@ -217,7 +223,9 @@ class Arena {
 
 data class HUDState(
     val health: Int, val maxHealth: Int,
-    val ammo: Int, val weaponName: String, val currentWeapon: Int,
+    val magCurrent: Int, val magMax: Int, val reserveAmmo: Int,
+    val weaponName: String, val currentWeapon: Int,
+    val isReloading: Boolean, val reloadProgress: Float,
     val score: Int, val highScore: Int,
     val wave: Int, val combo: Int, val comboTimer: Float,
     val damageFlash: Float, val gameState: GameState,

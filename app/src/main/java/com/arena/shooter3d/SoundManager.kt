@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 class SoundManager(private val ctx: Context) {
     private var pool: SoundPool? = null
-    private val ids = IntArray(11)
+    private val ids = IntArray(12)
     private var ready = false
 
     fun init() {
@@ -31,6 +31,7 @@ class SoundManager(private val ctx: Context) {
             ids[8] = gen("over", descTone(0.5f, 600f, 150f, 0.6f))
             ids[9] = gen("switch", tone(0.04f, 1600f, 0.25f))
             ids[10] = gen("headshot", headshotSfx())
+            ids[11] = gen("reload", reloadSfx())
             ready = true
         } catch (_: Exception) {}
     }
@@ -122,6 +123,17 @@ class SoundManager(private val ctx: Context) {
             val snap = if (p < 0.08f) sin(2f * PI.toFloat() * 3200f * t) * (1f - p / 0.08f) * 0.4f else 0f
             val ns = (Random.nextFloat() * 2f - 1f) * 0.1f * (1f - p)
             o[i] = ((ping + crack + snap + ns) * env * 0.7f * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
+    }
+
+    private fun reloadSfx(): ShortArray {
+        val r = 22050; val dur = 0.35f; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val click1 = if (p < 0.15f) sin(2f * PI.toFloat() * 800f * t) * (1f - p / 0.15f) * 0.5f else 0f
+            val slide = if (p in 0.15f..0.55f) { val sp = (p - 0.15f) / 0.4f; sin(2f * PI.toFloat() * (400f + sp * 300f) * t) * (1f - sp) * 0.3f } else 0f
+            val click2 = if (p > 0.6f) { val sp = (p - 0.6f) / 0.4f; sin(2f * PI.toFloat() * 1200f * t) * (1f - sp).pow(2f) * 0.5f } else 0f
+            val metal = (Random.nextFloat() * 2f - 1f) * 0.08f * (1f - p)
+            o[i] = ((click1 + slide + click2 + metal) * 0.8f * 30000).toInt().coerceIn(-32768, 32767).toShort()
         }; return o
     }
 

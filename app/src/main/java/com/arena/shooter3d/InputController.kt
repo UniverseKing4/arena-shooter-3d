@@ -11,6 +11,7 @@ class InputController {
     var lookDeltaX = 0f; var lookDeltaY = 0f
     var isFiring = false
     var weaponSwitchTapped = false
+    var reloadTapped = false
     var pauseTapped = false
     var jumpTapped = false
     var isSprinting = false
@@ -25,6 +26,7 @@ class InputController {
     private val lookSensitivity = 0.005f
 
     var fireBtnX = 0f; var fireBtnY = 0f; val fireBtnRadius = 155f
+    var reloadBtnX = 0f; var reloadBtnY = 0f; val reloadBtnRadius = 65f
     var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 65f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
     var jumpBtnX = 0f; var jumpBtnY = 0f; val jumpBtnRadius = 75f
@@ -33,7 +35,8 @@ class InputController {
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
         fireBtnX = screenW - 480f; fireBtnY = screenH - 340f
-        switchBtnX = fireBtnX - 100f; switchBtnY = screenH - 120f
+        reloadBtnX = fireBtnX - 40f; reloadBtnY = fireBtnY - 200f
+        switchBtnX = reloadBtnX + 140f; switchBtnY = reloadBtnY
         jumpBtnX = fireBtnX + 240f; jumpBtnY = fireBtnY + 160f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
@@ -41,6 +44,9 @@ class InputController {
     fun onTouchDown(pointerId: Int, x: Float, y: Float) {
         if (inCircle(x, y, jumpBtnX, jumpBtnY, jumpBtnRadius + 12f)) {
             jumpTapped = true; return
+        }
+        if (inCircle(x, y, reloadBtnX, reloadBtnY, reloadBtnRadius + 12f)) {
+            reloadTapped = true; return
         }
         if (inCircle(x, y, fireBtnX, fireBtnY, fireBtnRadius + 18f)) {
             firePointerId = pointerId; isFiring = true; lastFireX = x; lastFireY = y; return
@@ -102,6 +108,7 @@ class InputController {
         lookDeltaX = 0f; lookDeltaY = 0f; return dx to dy
     }
     fun consumeWeaponSwitch(): Boolean { val t = weaponSwitchTapped; weaponSwitchTapped = false; return t }
+    fun consumeReload(): Boolean { val t = reloadTapped; reloadTapped = false; return t }
     fun consumePause(): Boolean { val t = pauseTapped; pauseTapped = false; return t }
     fun consumeJump(): Boolean { val t = jumpTapped; jumpTapped = false; return t }
 
