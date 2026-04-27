@@ -74,12 +74,25 @@ class GameEngine {
         }
 
         if (input.consumeJump() && player.isGrounded) {
-            player.velocityY = 7.5f; player.isGrounded = false
+            player.velocityY = 9.5f; player.isGrounded = false
         }
 
         player.velocityY -= 22f * dt
         player.position.y += player.velocityY * dt
-        if (player.position.y <= 0f) {
+        var landedOnWall = false
+        if (player.velocityY <= 0f) {
+            for (w in arena.walls) {
+                if (w.height > 3f) continue
+                val px = player.position.x; val pz = player.position.z
+                if (px > w.minX - 0.3f && px < w.maxX + 0.3f && pz > w.minZ - 0.3f && pz < w.maxZ + 0.3f) {
+                    if (player.position.y <= w.height && player.position.y > w.height - 0.5f) {
+                        player.position.y = w.height; player.velocityY = 0f; player.isGrounded = true
+                        landedOnWall = true; break
+                    }
+                }
+            }
+        }
+        if (!landedOnWall && player.position.y <= 0f) {
             player.position.y = 0f; player.velocityY = 0f; player.isGrounded = true
         }
 

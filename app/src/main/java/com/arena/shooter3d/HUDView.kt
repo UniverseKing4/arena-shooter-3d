@@ -47,6 +47,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawPlaying(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        if (hs.damageFlash > 0.01f) drawDamageVignette(canvas, w, h, hs.damageFlash)
         drawCrosshair(canvas, w, h)
         drawJoystick(canvas)
         drawFireButton(canvas, w, h, hs)
@@ -234,6 +235,20 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         canvas.drawPath(path, p)
         tp.textSize = 16f; tp.color = 0xAAFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
         canvas.drawText("JUMP", bx, by + 26f, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawDamageVignette(canvas: Canvas, w: Float, h: Float, amt: Float) {
+        val alpha = (amt * 180).toInt().coerceIn(0, 180)
+        p.color = Color.argb(alpha, 200, 10, 10)
+        canvas.drawRect(0f, 0f, w, h, p)
+
+        val edgeAlpha = (amt * 220).toInt().coerceIn(0, 220)
+        val edgeW = w * 0.25f; val edgeH = h * 0.25f
+        p.color = Color.argb(edgeAlpha, 255, 0, 0)
+        canvas.drawRect(0f, 0f, edgeW, h, p)
+        canvas.drawRect(w - edgeW, 0f, w, h, p)
+        canvas.drawRect(0f, 0f, w, edgeH, p)
+        canvas.drawRect(0f, h - edgeH, w, h, p)
     }
 
     private fun drawSprintIndicator(canvas: Canvas, w: Float, h: Float) {
