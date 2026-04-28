@@ -257,7 +257,7 @@ class GameEngine {
                         if (isHeadshot) {
                             soundEvents.add(SoundEvent.HEADSHOT)
                             headshots++
-                            spawnBurst(nx, ny, nz, 1f, 0.85f, 0.15f, 18)
+                            spawnHeadshotBurst(nx, ny, nz)
                             floatingTexts.add(FloatingText(e.position.x, s * 1.5f, e.position.z, "HEADSHOT!", 1.5f, 1f, 0.85f, 0.15f))
                         } else {
                             soundEvents.add(SoundEvent.HIT_ENEMY)
@@ -486,6 +486,12 @@ class GameEngine {
         for (i in 0 until n) particles.add(Particle(x, y, z,
             (rng.nextFloat() - 0.5f) * 8f, rng.nextFloat() * 5f + 1f, (rng.nextFloat() - 0.5f) * 8f,
             0.3f + rng.nextFloat() * 0.3f, 0.6f, rng.nextFloat() * 2.5f + 1.5f, r, g, b))
+    }
+
+    private fun spawnHeadshotBurst(x: Float, y: Float, z: Float) {
+        for (i in 0 until 22) particles.add(Particle(x, y, z,
+            (rng.nextFloat() - 0.5f) * 10f, rng.nextFloat() * 7f + 2f, (rng.nextFloat() - 0.5f) * 10f,
+            0.4f + rng.nextFloat() * 0.4f, 0.8f, rng.nextFloat() * 4f + 3f, 1f, 0.85f, 0.15f))
     }
 
     private fun spawnPickupFX(pos: Vec3, type: PickupType) {
