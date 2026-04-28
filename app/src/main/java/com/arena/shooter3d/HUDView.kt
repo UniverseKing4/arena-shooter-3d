@@ -40,92 +40,126 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         val slowT = (time % 4000).toFloat() / 4000f
         val fastT = (time % 1500).toFloat() / 1500f
 
-        // Dark gradient background
-        p.color = 0xFF050510.toInt(); canvas.drawRect(0f, 0f, w, h, p)
+        // Full screen solid dark background
+        p.style = Paint.Style.FILL
+        p.shader = null
+        p.color = 0xFF050510.toInt()
+        canvas.drawRect(0f, 0f, w, h, p)
 
         // Animated grid lines
-        p.color = 0x15FF1744.toInt(); p.strokeWidth = 1f; p.style = Paint.Style.STROKE
-        val gridSize = 80f; val offsetX = (t * gridSize) % gridSize; val offsetY = (t * gridSize * 0.7f) % gridSize
-        var gx = -gridSize + offsetX; while (gx < w + gridSize) { canvas.drawLine(gx, 0f, gx, h, p); gx += gridSize }
-        var gy = -gridSize + offsetY; while (gy < h + gridSize) { canvas.drawLine(0f, gy, w, gy, p); gy += gridSize }
+        p.color = 0x18FF1744.toInt(); p.strokeWidth = 1f; p.style = Paint.Style.STROKE
+        val gridSize = 90f
+        val offsetX = (t * gridSize) % gridSize
+        val offsetY = (t * gridSize * 0.7f) % gridSize
+        var gx = -gridSize + offsetX
+        while (gx < w + gridSize) { canvas.drawLine(gx, 0f, gx, h, p); gx += gridSize }
+        var gy = -gridSize + offsetY
+        while (gy < h + gridSize) { canvas.drawLine(0f, gy, w, gy, p); gy += gridSize }
         p.style = Paint.Style.FILL
 
         // Animated floating particles
-        for (i in 0 until 18) {
-            val px = ((sin((t + i * 0.37f) * 6.28f) * 0.4f + 0.5f) * w)
-            val py = ((cos((t + i * 0.53f) * 6.28f) * 0.4f + 0.5f) * h)
-            val pa = (sin((t + i * 0.2f) * 6.28f) * 0.5f + 0.5f)
-            val ps = 2f + sin((t + i * 0.6f) * 6.28f) * 1.5f
-            p.color = Color.argb((pa * 90).toInt(), 255, 23, 68)
+        for (i in 0 until 22) {
+            val seed = i * 1.17f
+            val px = ((sin((t + seed * 0.37f) * 6.28f) * 0.42f + 0.5f) * w)
+            val py = ((cos((t + seed * 0.53f) * 6.28f) * 0.42f + 0.5f) * h)
+            val pa = (sin((t + seed * 0.2f) * 6.28f) * 0.5f + 0.5f)
+            val ps = 2.5f + sin((t + seed * 0.6f) * 6.28f) * 2f
+            p.color = Color.argb((pa * 100).toInt().coerceIn(0, 255), 255, 23, 68)
             canvas.drawCircle(px, py, ps, p)
         }
 
-        // Subtle red vignette glow at edges
-        val vigAlpha = (sin(slowT * 6.28f) * 20 + 30).toInt().coerceIn(10, 50)
+        // Red vignette glow at edges
+        val vigAlpha = (sin(slowT * 6.28f) * 20 + 35).toInt().coerceIn(15, 55)
         val vigColor = Color.argb(vigAlpha, 255, 23, 68)
         val vigClear = Color.argb(0, 255, 23, 68)
-        val edgeW = w * 0.25f
+        val edgeW = w * 0.22f
         p.shader = LinearGradient(0f, 0f, edgeW, 0f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(0f, 0f, edgeW, h, p)
         p.shader = LinearGradient(w, 0f, w - edgeW, 0f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
         canvas.drawRect(w - edgeW, 0f, w, h, p)
+        p.shader = LinearGradient(0f, 0f, 0f, h * 0.15f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, 0f, w, h * 0.15f, p)
+        p.shader = LinearGradient(0f, h, 0f, h * 0.85f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, h * 0.85f, w, h, p)
         p.shader = null
 
         // Top decorative lines
-        p.color = 0x44FF1744.toInt(); p.strokeWidth = 2f; p.style = Paint.Style.STROKE
-        val lineW = w * 0.35f
-        canvas.drawLine(w / 2 - lineW, h * 0.14f, w / 2 + lineW, h * 0.14f, p)
-        canvas.drawLine(w / 2 - lineW * 0.6f, h * 0.16f, w / 2 + lineW * 0.6f, h * 0.16f, p)
+        p.color = 0x55FF1744.toInt(); p.strokeWidth = 2.5f; p.style = Paint.Style.STROKE
+        val lineW = w * 0.38f
+        canvas.drawLine(w / 2 - lineW, h * 0.12f, w / 2 + lineW, h * 0.12f, p)
+        p.color = 0x33FF1744.toInt(); p.strokeWidth = 1.5f
+        canvas.drawLine(w / 2 - lineW * 0.65f, h * 0.145f, w / 2 + lineW * 0.65f, h * 0.145f, p)
         p.style = Paint.Style.FILL
 
-        // Game title with glow effect
-        val titleGlow = (sin(slowT * 6.28f) * 0.15f + 0.85f)
-        titleP.textSize = 56f; titleP.color = Color.argb((titleGlow * 40).toInt(), 255, 23, 68)
-        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.26f + 2f, titleP)
-        canvas.drawText("ARENA SHOOTER 3D", w / 2 + 1f, h * 0.26f + 1f, titleP)
+        // Small dot decorations on top line
+        p.color = 0xAAFF1744.toInt()
+        canvas.drawCircle(w / 2 - lineW, h * 0.12f, 4f, p)
+        canvas.drawCircle(w / 2 + lineW, h * 0.12f, 4f, p)
+
+        // Game title with glow effect - BIGGER
+        val titleGlow = (sin(slowT * 6.28f) * 0.12f + 0.88f)
+        titleP.textSize = 68f
+        titleP.textAlign = Paint.Align.CENTER
+        // Shadow/glow layers
+        titleP.color = Color.argb((titleGlow * 50).toInt(), 255, 23, 68)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.24f + 3f, titleP)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2 + 2f, h * 0.24f + 2f, titleP)
+        // Main title
         titleP.color = Color.argb((titleGlow * 255).toInt(), 255, 23, 68)
-        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.26f, titleP)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.24f, titleP)
 
-        // Subtitle
-        subP.textSize = 18f; subP.color = 0x99B0BEC5.toInt()
-        canvas.drawText("SURVIVE THE ARENA", w / 2, h * 0.32f, subP)
+        // Subtitle - BIGGER
+        subP.textSize = 24f; subP.color = 0xAAB0BEC5.toInt(); subP.textAlign = Paint.Align.CENTER
+        canvas.drawText("SURVIVE THE ARENA", w / 2, h * 0.31f, subP)
 
-        // Animated crosshair behind play button
-        val cx = w / 2f; val cy = h * 0.54f
+        // Animated crosshair decoration behind play button
+        val cx = w / 2f; val cy = h * 0.52f
         val crossRot = t * 360f
-        val crossAlpha = (sin(fastT * 6.28f) * 30 + 50).toInt().coerceIn(20, 80)
-        p.color = Color.argb(crossAlpha, 255, 23, 68); p.strokeWidth = 1.5f; p.style = Paint.Style.STROKE
-        val outerR = 95f
+        val crossAlpha = (sin(fastT * 6.28f) * 25 + 55).toInt().coerceIn(30, 80)
+
+        // Outer rotating ring
+        p.color = Color.argb(crossAlpha, 255, 23, 68); p.strokeWidth = 1.8f; p.style = Paint.Style.STROKE
+        val outerR = 105f
         canvas.drawCircle(cx, cy, outerR, p)
         p.style = Paint.Style.FILL
 
-        // Rotating tick marks around play button
-        p.color = Color.argb(60, 255, 23, 68); p.strokeWidth = 2f; p.style = Paint.Style.STROKE
+        // Rotating tick marks
+        p.color = Color.argb(70, 255, 23, 68); p.strokeWidth = 2.5f; p.style = Paint.Style.STROKE
         for (i in 0 until 12) {
             val angle = (i * 30f + crossRot) * (PI.toFloat() / 180f)
-            val r1 = outerR + 5f; val r2 = outerR + 12f
+            val r1 = outerR + 6f; val r2 = outerR + 15f
+            canvas.drawLine(cx + cos(angle) * r1, cy + sin(angle) * r1, cx + cos(angle) * r2, cy + sin(angle) * r2, p)
+        }
+
+        // Counter-rotating inner dashes
+        p.color = Color.argb(40, 255, 23, 68); p.strokeWidth = 1.5f
+        for (i in 0 until 8) {
+            val angle = (i * 45f - crossRot * 0.5f) * (PI.toFloat() / 180f)
+            val r1 = outerR - 18f; val r2 = outerR - 8f
             canvas.drawLine(cx + cos(angle) * r1, cy + sin(angle) * r1, cx + cos(angle) * r2, cy + sin(angle) * r2, p)
         }
         p.style = Paint.Style.FILL
 
         // Play button - pulsing circle with triangle
         val btnR = 72f
-        val pulse = sin(fastT * 6.28f) * 0.08f + 1f
+        val pulse = sin(fastT * 6.28f) * 0.06f + 1f
         val btnRPulsed = btnR * pulse
 
-        // Button glow
-        p.color = Color.argb(40, 255, 23, 68)
-        canvas.drawCircle(cx, cy, btnRPulsed + 14f, p)
-        p.color = Color.argb(60, 255, 23, 68)
-        canvas.drawCircle(cx, cy, btnRPulsed + 6f, p)
+        // Outer glow layers
+        p.color = Color.argb(25, 255, 23, 68)
+        canvas.drawCircle(cx, cy, btnRPulsed + 20f, p)
+        p.color = Color.argb(45, 255, 23, 68)
+        canvas.drawCircle(cx, cy, btnRPulsed + 10f, p)
+        p.color = Color.argb(65, 255, 23, 68)
+        canvas.drawCircle(cx, cy, btnRPulsed + 4f, p)
 
         // Button fill
-        p.color = 0xDDFF1744.toInt()
+        p.color = 0xEEFF1744.toInt()
         canvas.drawCircle(cx, cy, btnRPulsed, p)
 
-        // Button inner highlight
-        p.color = 0x33FFFFFF.toInt()
-        canvas.drawCircle(cx, cy - 8f, btnRPulsed * 0.6f, p)
+        // Inner highlight
+        p.color = 0x22FFFFFF.toInt()
+        canvas.drawCircle(cx, cy - 10f, btnRPulsed * 0.55f, p)
 
         // Button border
         p.color = 0xFFFFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 3.5f
@@ -134,56 +168,72 @@ class HUDView(context: Context, private val input: InputController) : View(conte
 
         // Play triangle
         p.color = 0xFFFFFFFF.toInt()
-        val triSize = 32f
-        val path = android.graphics.Path()
-        path.moveTo(cx - triSize * 0.4f, cy - triSize)
-        path.lineTo(cx + triSize * 0.9f, cy)
-        path.lineTo(cx - triSize * 0.4f, cy + triSize)
-        path.close()
-        canvas.drawPath(path, p)
+        val triSize = 34f
+        val playPath = android.graphics.Path()
+        playPath.moveTo(cx - triSize * 0.35f, cy - triSize)
+        playPath.lineTo(cx + triSize * 0.9f, cy)
+        playPath.lineTo(cx - triSize * 0.35f, cy + triSize)
+        playPath.close()
+        canvas.drawPath(playPath, p)
 
-        // "PLAY" text below button
-        subP.textSize = 24f; subP.color = 0xCCFFFFFF.toInt()
-        canvas.drawText("PLAY", cx, cy + btnRPulsed + 34f, subP)
+        // "PLAY" text below button - BIGGER
+        subP.textSize = 28f; subP.color = 0xDDFFFFFF.toInt(); subP.textAlign = Paint.Align.CENTER
+        canvas.drawText("PLAY", cx, cy + btnRPulsed + 40f, subP)
 
-        // High score display
+        // High score display - FIXED alignment, centered, bigger
         if (hs.highScore > 0) {
-            val hsY = h * 0.78f
+            val hsY = h * 0.76f
+            val panelW = 200f; val panelH = 56f
+
             // Background panel
-            p.color = 0x33000000.toInt()
-            canvas.drawRoundRect(w / 2 - 150f, hsY - 30f, w / 2 + 150f, hsY + 20f, 10f, 10f, p)
-            p.color = 0x44FF1744.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.5f
-            canvas.drawRoundRect(w / 2 - 150f, hsY - 30f, w / 2 + 150f, hsY + 20f, 10f, 10f, p)
+            p.color = 0x44000000.toInt()
+            canvas.drawRoundRect(cx - panelW, hsY - panelH / 2, cx + panelW, hsY + panelH / 2, 12f, 12f, p)
+            p.color = 0x55FF1744.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.8f
+            canvas.drawRoundRect(cx - panelW, hsY - panelH / 2, cx + panelW, hsY + panelH / 2, 12f, 12f, p)
             p.style = Paint.Style.FILL
 
-            // Trophy icon (small diamond)
+            // Trophy diamond icon
             p.color = 0xFFFFC107.toInt()
             val tPath = android.graphics.Path()
-            tPath.moveTo(w / 2 - 95f, hsY - 5f)
-            tPath.lineTo(w / 2 - 85f, hsY - 15f)
-            tPath.lineTo(w / 2 - 75f, hsY - 5f)
-            tPath.lineTo(w / 2 - 85f, hsY + 5f)
+            val tCx = cx - 130f; val tCy = hsY
+            tPath.moveTo(tCx, tCy - 10f)
+            tPath.lineTo(tCx + 8f, tCy)
+            tPath.lineTo(tCx, tCy + 10f)
+            tPath.lineTo(tCx - 8f, tCy)
             tPath.close()
             canvas.drawPath(tPath, p)
 
-            subP.textSize = 20f; subP.color = 0xFFB0BEC5.toInt(); subP.textAlign = Paint.Align.LEFT
-            canvas.drawText("HIGH SCORE", w / 2 - 65f, hsY - 4f, subP)
-            subP.textAlign = Paint.Align.RIGHT; subP.color = 0xFF00E5FF.toInt(); subP.textSize = 24f
-            canvas.drawText("${hs.highScore}", w / 2 + 135f, hsY - 2f, subP)
-            subP.textAlign = Paint.Align.CENTER
+            // "HIGH SCORE" label - centered
+            subP.textSize = 22f; subP.color = 0xDDB0BEC5.toInt(); subP.textAlign = Paint.Align.CENTER
+            canvas.drawText("HIGH SCORE", cx + 10f, hsY - 6f, subP)
+
+            // Score value - centered below label
+            subP.textSize = 30f; subP.color = 0xFF00E5FF.toInt(); subP.textAlign = Paint.Align.CENTER
+            canvas.drawText("${hs.highScore}", cx + 10f, hsY + 24f, subP)
         }
 
-        // Controls hint at bottom
-        val ctrlY = h * 0.92f
-        p.color = 0x22FFFFFF.toInt()
-        canvas.drawRoundRect(w / 2 - 320f, ctrlY - 18f, w / 2 + 320f, ctrlY + 14f, 8f, 8f, p)
-        subP.color = 0x88FFFFFF.toInt(); subP.textSize = 16f
-        canvas.drawText("JOYSTICK: MOVE  |  DRAG: AIM  |  FIRE: SHOOT  |  JUMP  |  RELOAD", w / 2, ctrlY + 5f, subP)
+        // Controls hint at bottom - BIGGER text
+        val ctrlY = h * 0.91f
+        p.color = 0x28FFFFFF.toInt()
+        canvas.drawRoundRect(w / 2 - 340f, ctrlY - 20f, w / 2 + 340f, ctrlY + 18f, 10f, 10f, p)
+        subP.color = 0x99FFFFFF.toInt(); subP.textSize = 18f; subP.textAlign = Paint.Align.CENTER
+        canvas.drawText("MOVE  •  AIM  •  SHOOT  •  JUMP  •  RELOAD  •  SWITCH", w / 2, ctrlY + 6f, subP)
 
-        // Bottom decorative line
-        p.color = 0x33FF1744.toInt(); p.strokeWidth = 1.5f; p.style = Paint.Style.STROKE
-        canvas.drawLine(w * 0.2f, h * 0.97f, w * 0.8f, h * 0.97f, p)
+        // Bottom decorative lines
+        p.color = 0x44FF1744.toInt(); p.strokeWidth = 2f; p.style = Paint.Style.STROKE
+        canvas.drawLine(w * 0.15f, h * 0.965f, w * 0.85f, h * 0.965f, p)
+        p.color = 0x22FF1744.toInt(); p.strokeWidth = 1f
+        canvas.drawLine(w * 0.25f, h * 0.98f, w * 0.75f, h * 0.98f, p)
         p.style = Paint.Style.FILL
+
+        // Bottom dot decorations
+        p.color = 0x88FF1744.toInt()
+        canvas.drawCircle(w * 0.15f, h * 0.965f, 3.5f, p)
+        canvas.drawCircle(w * 0.85f, h * 0.965f, 3.5f, p)
+
+        // Reset paint state
+        subP.textAlign = Paint.Align.CENTER
+        p.shader = null; p.style = Paint.Style.FILL
 
         // Force continuous redraw for animations
         postInvalidate()

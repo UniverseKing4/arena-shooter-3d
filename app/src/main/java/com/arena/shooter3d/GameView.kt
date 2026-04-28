@@ -39,6 +39,7 @@ class GameView(
             SoundEvent.HEADSHOT -> soundManager.play(10)
             SoundEvent.RELOAD -> soundManager.play(11)
             SoundEvent.RELOAD_COMPLETE -> soundManager.play(12)
+            SoundEvent.GAME_START -> soundManager.play(13)
         }
     }
 
@@ -52,10 +53,10 @@ class GameView(
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 when (engine.gameState) {
                     GameState.MENU -> {
-                        val btnX = width / 2f; val btnY = height * 0.54f
+                        val btnX = width / 2f; val btnY = height * 0.52f
                         val btnR = 72f
                         val dx = x - btnX; val dy = y - btnY
-                        if (dx * dx + dy * dy < (btnR + 20f) * (btnR + 20f)) {
+                        if (dx * dx + dy * dy < (btnR + 24f) * (btnR + 24f)) {
                             engine.startGame()
                         }
                         return true

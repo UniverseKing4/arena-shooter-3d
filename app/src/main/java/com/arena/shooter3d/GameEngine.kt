@@ -20,6 +20,7 @@ class GameEngine {
     private val sprintMultiplier = 1.7f
     private val rng = Random
     val soundEvents = mutableListOf<SoundEvent>()
+    private val pendingSounds = mutableListOf<SoundEvent>()
     var isMoving = false
     var isSprinting = false
     var headshots = 0
@@ -34,6 +35,7 @@ class GameEngine {
         pickups.clear()
         for ((i, spot) in arena.pickupSpots.withIndex())
             pickups.add(Pickup(spot.copy(), if (i % 2 == 0) PickupType.HEALTH else PickupType.AMMO))
+        pendingSounds.add(SoundEvent.GAME_START)
     }
 
     fun togglePause() {
@@ -43,6 +45,7 @@ class GameEngine {
 
     fun update(dt: Float, input: InputController) {
         soundEvents.clear()
+        if (pendingSounds.isNotEmpty()) { soundEvents.addAll(pendingSounds); pendingSounds.clear() }
         if (gameState != GameState.PLAYING) return
         val cdt = dt.coerceAtMost(0.05f)
 

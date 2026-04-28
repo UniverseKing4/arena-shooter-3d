@@ -9,7 +9,7 @@
     <path
         android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
         android:strokeWidth="1.8"
-        android:strokeColor="#44FF1744"
+        android:strokeColor="#66FF1744"
         android:fillColor="#00000000" />
 
     <!-- Inner crosshair circle -->
@@ -78,7 +78,7 @@
     <path
         android:pathData="M28,28L28,37M28,28L37,28"
         android:strokeWidth="3.2"
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#CCDDDDDD"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
@@ -86,7 +86,7 @@
     <path
         android:pathData="M80,28L80,37M80,28L71,28"
         android:strokeWidth="3.2"
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#CCDDDDDD"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
@@ -94,7 +94,7 @@
     <path
         android:pathData="M28,80L28,71M28,80L37,80"
         android:strokeWidth="3.2"
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#CCDDDDDD"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
@@ -102,7 +102,7 @@
     <path
         android:pathData="M80,80L80,71M80,80L71,80"
         android:strokeWidth="3.2"
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#CCDDDDDD"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 </vector>

@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 class SoundManager(private val ctx: Context) {
     private var pool: SoundPool? = null
-    private val ids = IntArray(13)
+    private val ids = IntArray(14)
     private var ready = false
 
     fun init() {
@@ -33,6 +33,7 @@ class SoundManager(private val ctx: Context) {
             ids[10] = gen("headshot", headshotSfx())
             ids[11] = gen("reload", reloadSfx())
             ids[12] = gen("reload_complete", reloadCompleteSfx())
+            ids[13] = gen("game_start", gameStartSfx())
             ready = true
         } catch (_: Exception) {}
     }
@@ -146,6 +147,18 @@ class SoundManager(private val ctx: Context) {
             val lock = if (p > 0.25f) { val sp = (p - 0.25f) / 0.75f; sin(2f * PI.toFloat() * 2200f * t) * (1f - sp).pow(2f) * 0.4f } else 0f
             val metallic = (Random.nextFloat() * 2f - 1f) * 0.06f * (1f - p).pow(2f)
             o[i] = ((snap + click + lock + metallic) * 0.85f * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
+    }
+
+    private fun gameStartSfx(): ShortArray {
+        val r = 22050; val dur = 0.45f; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val sweep = sin(2f * PI.toFloat() * (400f + p * 1200f) * t) * (1f - p * 0.6f) * 0.35f
+            val tone1 = if (p < 0.3f) sin(2f * PI.toFloat() * 880f * t) * (1f - p / 0.3f) * 0.3f else 0f
+            val tone2 = if (p in 0.15f..0.45f) { val sp = (p - 0.15f) / 0.3f; sin(2f * PI.toFloat() * 1320f * t) * (1f - sp).pow(1.5f) * 0.35f } else 0f
+            val tone3 = if (p > 0.3f) { val sp = (p - 0.3f) / 0.7f; sin(2f * PI.toFloat() * 1760f * t) * (1f - sp).pow(2f) * 0.3f } else 0f
+            val shimmer = sin(2f * PI.toFloat() * 3520f * t) * (1f - p).pow(3f) * 0.1f
+            o[i] = ((sweep + tone1 + tone2 + tone3 + shimmer) * 0.9f * 30000).toInt().coerceIn(-32768, 32767).toShort()
         }; return o
     }
 
