@@ -86,7 +86,7 @@ class GameRenderer(
     private fun drawFloor() {
         useScene(); GLES20.glUniform1i(uTexType, 1)
         Matrix.setIdentityM(model, 0); Matrix.scaleM(model, 0, engine.arena.size, 1f, engine.arena.size)
-        setMats(); GLES20.glUniform3f(uColor, 0.28f, 0.22f, 0.16f)
+        setMats(); GLES20.glUniform3f(uColor, 0.52f, 0.45f, 0.35f)
         bindDraw(floorVerts, 6, 6)
     }
 
