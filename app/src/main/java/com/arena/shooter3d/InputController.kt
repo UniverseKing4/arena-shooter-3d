@@ -35,8 +35,8 @@ class InputController {
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
         fireBtnX = screenW - 480f; fireBtnY = screenH - 340f
-        reloadBtnX = fireBtnX - 120f; reloadBtnY = fireBtnY + 240f
-        switchBtnX = reloadBtnX + 160f; switchBtnY = reloadBtnY
+        reloadBtnX = fireBtnX - 200f; reloadBtnY = fireBtnY + 240f
+        switchBtnX = reloadBtnX + 200f; switchBtnY = reloadBtnY
         jumpBtnX = fireBtnX + 240f; jumpBtnY = fireBtnY + 160f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
