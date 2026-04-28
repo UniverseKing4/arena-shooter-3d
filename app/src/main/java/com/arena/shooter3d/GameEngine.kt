@@ -369,7 +369,7 @@ class GameEngine {
                             player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
-                        e.attackCooldown = if (onObstacle) 2.5f else 1.0f
+                        e.attackCooldown = if (onObstacle) 3.0f else 1.0f
                         e.state = EnemyState.CHASE
                     }
                 }
