@@ -11,7 +11,7 @@ class GameEngine {
     val particles = mutableListOf<Particle>()
     val floatingTexts = mutableListOf<FloatingText>()
     val arena = Arena()
-    var gameState = GameState.MENU
+    @Volatile var gameState = GameState.MENU
     var score = 0; var highScore = 0; var wave = 0
     var combo = 0; var comboTimer = 0f
     var onHighScoreChanged: ((Int) -> Unit)? = null
@@ -20,7 +20,8 @@ class GameEngine {
     private val sprintMultiplier = 1.7f
     private val rng = Random
     val soundEvents = mutableListOf<SoundEvent>()
-    private val pendingSounds = mutableListOf<SoundEvent>()
+    @Volatile private var pendingStart = false
+    @Volatile private var pendingTogglePause = false
     var isMoving = false
     var isSprinting = false
     var headshots = 0
@@ -29,27 +30,37 @@ class GameEngine {
     var weaponSwitchPopupTimer = 0f
 
     fun startGame() {
-        player.reset(); enemies.clear(); projectiles.clear(); particles.clear(); floatingTexts.clear()
-        score = 0; wave = 0; combo = 0; comboTimer = 0f; waveDelay = 1.5f; headshots = 0
-        gameState = GameState.PLAYING; isMoving = false; isSprinting = false
-        pickups.clear()
-        for ((i, spot) in arena.pickupSpots.withIndex())
-            pickups.add(Pickup(spot.copy(), if (i % 2 == 0) PickupType.HEALTH else PickupType.AMMO))
-        pendingSounds.add(SoundEvent.GAME_START)
+        pendingStart = true
     }
 
     fun togglePause() {
-        if (gameState == GameState.PLAYING) gameState = GameState.PAUSED
-        else if (gameState == GameState.PAUSED) gameState = GameState.PLAYING
+        pendingTogglePause = true
     }
 
     fun update(dt: Float, input: InputController) {
         soundEvents.clear()
-        if (pendingSounds.isNotEmpty()) { soundEvents.addAll(pendingSounds); pendingSounds.clear() }
+
+        if (pendingStart) {
+            pendingStart = false
+            player.reset(); enemies.clear(); projectiles.clear(); particles.clear(); floatingTexts.clear()
+            score = 0; wave = 0; combo = 0; comboTimer = 0f; waveDelay = 1.5f; headshots = 0
+            gameState = GameState.PLAYING; isMoving = false; isSprinting = false
+            pickups.clear()
+            for ((i, spot) in arena.pickupSpots.withIndex())
+                pickups.add(Pickup(spot.copy(), if (i % 2 == 0) PickupType.HEALTH else PickupType.AMMO))
+            soundEvents.add(SoundEvent.GAME_START)
+        }
+
+        if (pendingTogglePause) {
+            pendingTogglePause = false
+            if (gameState == GameState.PLAYING) gameState = GameState.PAUSED
+            else if (gameState == GameState.PAUSED) gameState = GameState.PLAYING
+        }
+
         if (gameState != GameState.PLAYING) return
         val cdt = dt.coerceAtMost(0.05f)
 
-        if (input.consumePause()) { togglePause(); return }
+        if (input.consumePause()) { gameState = GameState.PAUSED; return }
 
         updatePlayer(cdt, input)
         updateGunAnimation(cdt)
@@ -167,7 +178,10 @@ class GameEngine {
     private fun updateGunAnimation(dt: Float) {
         player.gunRecoil = (player.gunRecoil - dt * 12f).coerceAtLeast(0f)
         player.muzzleFlash = (player.muzzleFlash - dt * 20f).coerceAtLeast(0f)
-        if (isMoving) player.gunBobPhase += dt * 7f
+        if (isMoving) {
+            player.gunBobPhase += dt * 7f
+            if (player.gunBobPhase > 628f) player.gunBobPhase -= 628f
+        }
 
         when (player.swapPhase) {
             1 -> {
@@ -288,7 +302,9 @@ class GameEngine {
         val iter = enemies.iterator()
         while (iter.hasNext()) {
             val e = iter.next()
-            e.bobPhase += dt * (if (e.state == EnemyState.CHASE) 5f else 3f); e.hitFlash = (e.hitFlash - dt * 5f).coerceAtLeast(0f)
+            e.bobPhase += dt * (if (e.state == EnemyState.CHASE) 5f else 3f)
+            if (e.bobPhase > 628f) e.bobPhase -= 628f
+            e.hitFlash = (e.hitFlash - dt * 5f).coerceAtLeast(0f)
             when (e.state) {
                 EnemyState.DYING -> {
                     e.deathTimer -= dt
@@ -372,7 +388,7 @@ class GameEngine {
                             player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
-                        e.attackCooldown = if (onObstacle) 3.0f else 1.0f
+                        e.attackCooldown = if (onObstacle) 4.0f else 1.0f
                         e.state = EnemyState.CHASE
                     }
                 }
@@ -385,6 +401,7 @@ class GameEngine {
         for (p in pickups) {
             if (!p.active) { p.respawnTimer -= dt; if (p.respawnTimer <= 0f) p.active = true; continue }
             p.bobPhase += dt * 2.5f
+            if (p.bobPhase > 628f) p.bobPhase -= 628f
             val dx = player.position.x - p.position.x; val dz = player.position.z - p.position.z
             if (dx * dx + dz * dz < 2.5f) {
                 when (p.type) {
@@ -492,12 +509,14 @@ class GameEngine {
     }
 
     private fun spawnBurst(x: Float, y: Float, z: Float, r: Float, g: Float, b: Float, n: Int) {
+        if (particles.size > 500) return
         for (i in 0 until n) particles.add(Particle(x, y, z,
             (rng.nextFloat() - 0.5f) * 8f, rng.nextFloat() * 5f + 1f, (rng.nextFloat() - 0.5f) * 8f,
             0.3f + rng.nextFloat() * 0.3f, 0.6f, rng.nextFloat() * 2.5f + 1.5f, r, g, b))
     }
 
     private fun spawnHeadshotBurst(x: Float, y: Float, z: Float) {
+        if (particles.size > 500) return
         for (i in 0 until 22) particles.add(Particle(x, y, z,
             (rng.nextFloat() - 0.5f) * 10f, rng.nextFloat() * 7f + 2f, (rng.nextFloat() - 0.5f) * 10f,
             0.4f + rng.nextFloat() * 0.4f, 0.8f, rng.nextFloat() * 4f + 3f, 1f, 0.85f, 0.15f))

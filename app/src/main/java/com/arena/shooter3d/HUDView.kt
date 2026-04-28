@@ -14,6 +14,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         color = Color.WHITE; textSize = 34f; typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD) }
     private val titleP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFFF1744.toInt(); textSize = 72f; typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD); textAlign = Paint.Align.CENTER }
+    private val reusablePath = Path()
     private val subP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFCCCCCC.toInt(); textSize = 30f; typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL); textAlign = Paint.Align.CENTER }
     private val scoreP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -169,7 +170,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         // Play triangle
         p.color = 0xFFFFFFFF.toInt()
         val triSize = 34f
-        val playPath = android.graphics.Path()
+        val playPath = reusablePath; playPath.reset()
         playPath.moveTo(cx - triSize * 0.35f, cy - triSize)
         playPath.lineTo(cx + triSize * 0.9f, cy)
         playPath.lineTo(cx - triSize * 0.35f, cy + triSize)
@@ -194,7 +195,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
 
             // Trophy diamond icon
             p.color = 0xFFFFC107.toInt()
-            val tPath = android.graphics.Path()
+            val tPath = reusablePath; tPath.reset()
             val tCx = cx - 130f; val tCy = hsY
             tPath.moveTo(tCx, tCy - 10f)
             tPath.lineTo(tCx + 8f, tCy)
@@ -330,7 +331,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = 0xDDFFFFFF.toInt()
         val hs = hudState
         if (hs != null && hs.gameState == GameState.PAUSED) {
-            val path = android.graphics.Path()
+            val path = reusablePath; path.reset()
             path.moveTo(bx - 7, by - 11)
             path.lineTo(bx + 11, by)
             path.lineTo(bx - 7, by + 11)
@@ -432,7 +433,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = 0x6600E5FF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 4f
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
         p.color = 0xCCFFFFFF.toInt()
-        val path = android.graphics.Path()
+        val path = reusablePath; path.reset()
         path.moveTo(bx, by - 24f)
         path.lineTo(bx - 18f, by + 10f)
         path.lineTo(bx + 18f, by + 10f)
@@ -497,7 +498,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = 0xFF333333.toInt(); canvas.drawCircle(bx, by, br + 4, p)
         p.color = 0xFF00E5FF.toInt(); canvas.drawCircle(bx, by, br, p)
         p.color = 0xFFFFFFFF.toInt()
-        val path = android.graphics.Path()
+        val path = reusablePath; path.reset()
         path.moveTo(bx - 8, by - 12)
         path.lineTo(bx + 12, by)
         path.lineTo(bx - 8, by + 12)

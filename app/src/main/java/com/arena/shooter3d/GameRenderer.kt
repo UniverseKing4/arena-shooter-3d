@@ -30,6 +30,8 @@ class GameRenderer(
     private lateinit var floorVerts: FloatBuffer
     private val proj = FloatArray(16); private val view = FloatArray(16)
     private val vp = FloatArray(16); private val model = FloatArray(16); private val mvp = FloatArray(16)
+    private var particleData = FloatArray(800 * 8)
+    private var particleBuf: FloatBuffer = ByteBuffer.allocateDirect(800 * 8 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0.38f, 0.55f, 0.78f, 1f)
@@ -366,14 +368,19 @@ class GameRenderer(
         GLES20.glUseProgram(particleProgram); GLES20.glUniformMatrix4fv(puVP, 1, false, vp, 0)
         GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE)
         GLES20.glDepthMask(false)
-        val d = FloatArray(pts.size * 8); var idx = 0
-        for (pt in pts) { d[idx++]=pt.x; d[idx++]=pt.y; d[idx++]=pt.z; d[idx++]=pt.size*pt.alpha
-            d[idx++]=pt.r; d[idx++]=pt.g; d[idx++]=pt.b; d[idx++]=pt.alpha }
-        val buf = fbuf(d)
+        val needed = pts.size * 8
+        if (needed > particleData.size) {
+            particleData = FloatArray(needed)
+            particleBuf = ByteBuffer.allocateDirect(needed * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        }
+        var idx = 0
+        for (pt in pts) { particleData[idx++]=pt.x; particleData[idx++]=pt.y; particleData[idx++]=pt.z; particleData[idx++]=pt.size*pt.alpha
+            particleData[idx++]=pt.r; particleData[idx++]=pt.g; particleData[idx++]=pt.b; particleData[idx++]=pt.alpha }
+        particleBuf.clear(); particleBuf.put(particleData, 0, needed); particleBuf.position(0)
         GLES20.glEnableVertexAttribArray(paPos); GLES20.glEnableVertexAttribArray(paSize); GLES20.glEnableVertexAttribArray(paColor)
-        buf.position(0); GLES20.glVertexAttribPointer(paPos, 3, GLES20.GL_FLOAT, false, 32, buf)
-        buf.position(3); GLES20.glVertexAttribPointer(paSize, 1, GLES20.GL_FLOAT, false, 32, buf)
-        buf.position(4); GLES20.glVertexAttribPointer(paColor, 4, GLES20.GL_FLOAT, false, 32, buf)
+        particleBuf.position(0); GLES20.glVertexAttribPointer(paPos, 3, GLES20.GL_FLOAT, false, 32, particleBuf)
+        particleBuf.position(3); GLES20.glVertexAttribPointer(paSize, 1, GLES20.GL_FLOAT, false, 32, particleBuf)
+        particleBuf.position(4); GLES20.glVertexAttribPointer(paColor, 4, GLES20.GL_FLOAT, false, 32, particleBuf)
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, pts.size)
         GLES20.glDisableVertexAttribArray(paPos); GLES20.glDisableVertexAttribArray(paSize); GLES20.glDisableVertexAttribArray(paColor)
         GLES20.glDepthMask(true); GLES20.glDisable(GLES20.GL_BLEND)
