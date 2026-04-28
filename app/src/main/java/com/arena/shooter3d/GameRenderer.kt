@@ -95,7 +95,7 @@ class GameRenderer(
         GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         useScene(); GLES20.glUniform1i(uTexType, 0)
         val p = engine.player
-        val lightDir = Vec3(0.4f, 0.9f, 0.3f).normalize()
+        val lightDir = Vec3(0.4f, 0.9f, 0.3f).normalized()
         val sunDist = 200f
         val sunX = p.position.x + lightDir.x * sunDist
         val sunY = lightDir.y * sunDist

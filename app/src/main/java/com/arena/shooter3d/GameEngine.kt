@@ -362,7 +362,7 @@ class GameEngine {
                     e.stateTimer -= dt
                     if (e.stateTimer <= 0f) {
                         val onObstacle = player.position.y >= 0.5f && player.position.y < 1.5f
-                        val isJumping = player.velocity.y != 0f
+                        val isJumping = player.position.y > 0.1f
                         if (player.position.distTo(e.position) < e.type.attackRange + 0.5f && !isJumping) {
                             player.health -= e.type.damage
                             player.damageFlash = 1f; player.screenShake = 0.5f
