@@ -319,7 +319,7 @@ class GameEngine {
                     if (dist < e.type.attackRange) {
                         val onObstacle = player.position.y >= 0.5f && player.position.y < 1.5f
                         e.state = EnemyState.ATTACK
-                        e.stateTimer = if (onObstacle) 0.65f else 0.35f
+                        e.stateTimer = if (onObstacle) 1.0f else 0.35f
                     } else if (dist > 0.1f) {
                         val dir = toPlayer.normalized()
                         var spd = e.type.speed
@@ -388,7 +388,7 @@ class GameEngine {
                             player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
-                        e.attackCooldown = if (onObstacle) 4.0f else 1.0f
+                        e.attackCooldown = if (onObstacle) 5.0f else 1.0f
                         e.state = EnemyState.CHASE
                     }
                 }

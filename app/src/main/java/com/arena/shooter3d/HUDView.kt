@@ -356,7 +356,7 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         p.color = when { ratio > 0.6f -> 0xFF4CAF50.toInt(); ratio > 0.3f -> 0xFFFFC107.toInt(); else -> 0xFFFF1744.toInt() }
         canvas.drawRoundRect(sx + 2, y + 2, sx + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
         if (ratio <= 0.3f && ratio > 0f) {
-            val pulse = (sin(System.currentTimeMillis() / 200f) * 0.3f + 0.7f).coerceIn(0f, 1f)
+            val pulse = (sin((System.currentTimeMillis() % 1257).toFloat() / 200f) * 0.3f + 0.7f).coerceIn(0f, 1f)
             p.color = Color.argb((pulse * 80).toInt(), 255, 23, 68)
             canvas.drawRoundRect(sx + 2, y + 2, sx + 2 + (barW - 4) * ratio, y + barH - 2, 3f, 3f, p)
         }
