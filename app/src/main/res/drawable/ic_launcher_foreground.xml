@@ -13,10 +13,8 @@
         android:fillColor="#00000000" />
 
     <!-- Crosshair center dot -->
-    <circle
-        android:cx="54"
-        android:cy="54"
-        android:r="3"
+    <path
+        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
         android:fillColor="#FF1744" />
 
     <!-- Crosshair horizontal line left -->
