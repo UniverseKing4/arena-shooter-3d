@@ -86,7 +86,7 @@ class GameRenderer(
     private fun drawFloor() {
         useScene(); GLES20.glUniform1i(uTexType, 1)
         Matrix.setIdentityM(model, 0); Matrix.scaleM(model, 0, engine.arena.size, 1f, engine.arena.size)
-        setMats(); GLES20.glUniform3f(uColor, 0.52f, 0.45f, 0.35f)
+        setMats(); GLES20.glUniform3f(uColor, 0.18f, 0.14f, 0.10f)
         bindDraw(floorVerts, 6, 6)
     }
 
@@ -430,8 +430,8 @@ class GameRenderer(
     }
 
     private fun buildFloor(): FloatBuffer = fbuf(floatArrayOf(
-        -.5f,0f,-.5f,0f,1f,0f,.5f,0f,-.5f,0f,1f,0f,.5f,0f,.5f,0f,1f,0f,
-        -.5f,0f,-.5f,0f,1f,0f,.5f,0f,.5f,0f,1f,0f,-.5f,0f,.5f,0f,1f,0f))
+        -.5f,0f,-.5f,0f,1f,0f,.5f,0f,.5f,0f,1f,0f,.5f,0f,-.5f,0f,1f,0f,
+        -.5f,0f,-.5f,0f,1f,0f,-.5f,0f,.5f,0f,1f,0f,.5f,0f,.5f,0f,1f,0f))
 
     private fun fbuf(d: FloatArray): FloatBuffer =
         ByteBuffer.allocateDirect(d.size*4).order(ByteOrder.nativeOrder()).asFloatBuffer().apply { put(d); position(0) }
