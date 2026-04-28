@@ -77,6 +77,7 @@ class GameRenderer(
 
         useScene(); GLES20.glUniform3f(uLightDir, 0.4f, 0.9f, 0.3f)
         GLES20.glUniform3f(uCameraPos, p.position.x, p.eyeY, p.position.z)
+        drawSun()
         drawFloor(); drawWalls(); drawEnemies(); drawProjectiles(); drawPickups()
         drawParticles(); drawGunViewmodel()
     }
@@ -88,6 +89,27 @@ class GameRenderer(
         Matrix.setIdentityM(model, 0); Matrix.scaleM(model, 0, engine.arena.size, 1f, engine.arena.size)
         setMats(); GLES20.glUniform3f(uColor, 0.18f, 0.14f, 0.10f)
         bindDraw(floorVerts, 6, 6)
+    }
+
+    private fun drawSun() {
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST)
+        useScene(); GLES20.glUniform1i(uTexType, 0)
+        val p = engine.player
+        val lightDir = Vec3(0.4f, 0.9f, 0.3f).normalize()
+        val sunDist = 200f
+        val sunX = p.position.x + lightDir.x * sunDist
+        val sunY = lightDir.y * sunDist
+        val sunZ = p.position.z + lightDir.z * sunDist
+        Matrix.setIdentityM(model, 0)
+        Matrix.translateM(model, 0, sunX, sunY, sunZ)
+        val pulse = 1f + sin((System.currentTimeMillis() % 3000).toFloat() / 3000f * 6.28f) * 0.08f
+        Matrix.scaleM(model, 0, 18f * pulse, 18f * pulse, 18f * pulse)
+        setMats()
+        GLES20.glUniform3f(uColor, 1f, 0.95f, 0.7f)
+        GLES20.glUniform1f(uAlpha, 0.95f)
+        bindDraw(sphereVerts, sphereVC, sphereVC)
+        GLES20.glUniform1f(uAlpha, 1f)
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
     }
 
     private fun drawWalls() {
