@@ -5,79 +5,77 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Crosshair circle -->
+    <!-- Crosshair center circle -->
     <path
-        android:pathData="M54,54m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0"
-        android:strokeWidth="2.5"
-        android:strokeColor="#FFFFFF"
+        android:pathData="M54,54m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0"
+        android:strokeWidth="3"
+        android:strokeColor="#FF1744"
         android:fillColor="#00000000" />
 
-    <!-- Inner dot -->
-    <path
-        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
-        android:fillColor="#00E5FF" />
+    <!-- Crosshair center dot -->
+    <circle
+        android:cx="54"
+        android:cy="54"
+        android:r="3"
+        android:fillColor="#FF1744" />
 
-    <!-- Top line -->
+    <!-- Crosshair horizontal line left -->
     <path
-        android:pathData="M54,26L54,34"
-        android:strokeWidth="3"
-        android:strokeColor="#FFFFFF"
+        android:pathData="M28,54L38,54"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Bottom line -->
+    <!-- Crosshair horizontal line right -->
     <path
-        android:pathData="M54,74L54,82"
-        android:strokeWidth="3"
-        android:strokeColor="#FFFFFF"
+        android:pathData="M70,54L80,54"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Left line -->
+    <!-- Crosshair vertical line top -->
     <path
-        android:pathData="M26,54L34,54"
-        android:strokeWidth="3"
-        android:strokeColor="#FFFFFF"
+        android:pathData="M54,28L54,38"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Right line -->
+    <!-- Crosshair vertical line bottom -->
     <path
-        android:pathData="M74,54L82,54"
-        android:strokeWidth="3"
-        android:strokeColor="#FFFFFF"
+        android:pathData="M54,70L54,80"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Corner accents top-left -->
+    <!-- Corner bracket top-left (inward facing) -->
     <path
-        android:pathData="M33,33L38,33L38,38"
-        android:strokeWidth="2"
+        android:pathData="M30,30L30,38M30,30L38,30"
+        android:strokeWidth="3"
         android:strokeColor="#FFFFFF"
-        android:fillColor="#00000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner accents top-right -->
+    <!-- Corner bracket top-right (inward facing) -->
     <path
-        android:pathData="M75,33L70,33L70,38"
-        android:strokeWidth="2"
+        android:pathData="M78,30L78,38M78,30L70,30"
+        android:strokeWidth="3"
         android:strokeColor="#FFFFFF"
-        android:fillColor="#00000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner accents bottom-left -->
+    <!-- Corner bracket bottom-left (inward facing) -->
     <path
-        android:pathData="M33,75L38,75L38,70"
-        android:strokeWidth="2"
+        android:pathData="M30,78L30,70M30,78L38,78"
+        android:strokeWidth="3"
         android:strokeColor="#FFFFFF"
-        android:fillColor="#00000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner accents bottom-right -->
+    <!-- Corner bracket bottom-right (inward facing) -->
     <path
-        android:pathData="M75,75L70,75L70,70"
-        android:strokeWidth="2"
+        android:pathData="M78,78L78,70M78,78L70,78"
+        android:strokeWidth="3"
         android:strokeColor="#FFFFFF"
-        android:fillColor="#00000000"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 </vector>

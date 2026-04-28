@@ -96,16 +96,17 @@ class GameRenderer(
         useScene(); GLES20.glUniform1i(uTexType, 0)
         val p = engine.player
         val lightDir = Vec3(0.4f, 0.9f, 0.3f).normalized()
-        val sunDist = 95f
+        val sunDist = 90f
         val sunX = p.position.x + lightDir.x * sunDist
         val sunY = lightDir.y * sunDist
         val sunZ = p.position.z + lightDir.z * sunDist
         Matrix.setIdentityM(model, 0)
         Matrix.translateM(model, 0, sunX, sunY, sunZ)
-        val pulse = 1f + sin((System.currentTimeMillis() % 2500).toFloat() / 2500f * 6.28f) * 0.06f
-        Matrix.scaleM(model, 0, 5.5f * pulse, 5.5f * pulse, 5.5f * pulse)
+        val t = (System.currentTimeMillis() % 2000).toFloat() / 2000f
+        val pulse = 1f + sin(t * 6.28f) * 0.08f
+        Matrix.scaleM(model, 0, 7f * pulse, 7f * pulse, 7f * pulse)
         setMats()
-        GLES20.glUniform3f(uColor, 1f, 0.98f, 0.85f)
+        GLES20.glUniform3f(uColor, 1f, 1f, 0.3f)
         GLES20.glUniform1f(uAlpha, 1f)
         bindDraw(sphereVerts, sphereVC, 6)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
