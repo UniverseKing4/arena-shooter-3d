@@ -362,13 +362,14 @@ class GameEngine {
                     e.stateTimer -= dt
                     if (e.stateTimer <= 0f) {
                         val onObstacle = player.position.y >= 0.5f && player.position.y < 1.5f
-                        val isJumping = player.position.y > 0.1f
-                        if (player.position.distTo(e.position) < e.type.attackRange + 0.5f && !isJumping) {
+                        val onGround = player.position.y <= 0.1f
+                        val canHit = onGround || onObstacle
+                        if (player.position.distTo(e.position) < e.type.attackRange + 0.5f && canHit) {
                             player.health -= e.type.damage
                             player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
                         }
-                        e.attackCooldown = if (onObstacle && !isJumping) 2.5f else 1.0f
+                        e.attackCooldown = if (onObstacle) 2.5f else 1.0f
                         e.state = EnemyState.CHASE
                     }
                 }
