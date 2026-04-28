@@ -59,10 +59,13 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         drawHealthBar(canvas, w, h, hs)
         drawAmmo(canvas, h, hs)
         drawScore(canvas, w, hs)
-        drawCombo(canvas, w, hs)
+        drawCombo(canvas, w, h, hs)
         drawWave(canvas, w, hs)
         drawMinimap(canvas, w, hs)
         if (hs.isSprinting) drawSprintIndicator(canvas, w, h)
+        if (hs.wavePopupTimer > 0f) drawWavePopup(canvas, w, h, hs)
+        if (hs.weaponSwitchPopupTimer > 0f) drawWeaponSwitchPopup(canvas, w, h, hs)
+        if (hs.lowHealthWarning) drawLowHealthWarning(canvas, w, h)
     }
 
     private fun drawCrosshair(canvas: Canvas, w: Float, h: Float) {
@@ -181,20 +184,23 @@ class HUDView(context: Context, private val input: InputController) : View(conte
 
     private fun drawScore(canvas: Canvas, w: Float, hs: HUDState) {
         val rx = w - 18f; val top = 120f
-        p.color = 0x44000000.toInt()
-        canvas.drawRoundRect(rx - 140f, top - 20f, rx + 5f, top + 55f, 6f, 6f, p)
+        p.color = 0x55000000.toInt()
+        canvas.drawRoundRect(rx - 180f, top - 25f, rx + 5f, top + 60f, 6f, 6f, p)
         scoreP.textSize = 26f; scoreP.color = 0xFFB0BEC5.toInt()
         canvas.drawText("SCORE", rx, top, scoreP)
         scoreP.textSize = 40f; scoreP.color = Color.WHITE
         canvas.drawText("${hs.score}", rx, top + 42f, scoreP)
     }
 
-    private fun drawCombo(canvas: Canvas, w: Float, hs: HUDState) {
+    private fun drawCombo(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
         if (hs.combo > 1) {
             val a = ((hs.comboTimer / 3f) * 255).toInt().coerceIn(0, 255)
+            val size = 38f + hs.combo.coerceAtMost(15) * 3f
             comboP.color = Color.argb(a, 255, 193, 7)
-            comboP.textSize = 28f + hs.combo.coerceAtMost(10) * 2f
-            canvas.drawText("x${hs.combo}", w - 18f, 195f, comboP)
+            comboP.textSize = size
+            comboP.textAlign = Paint.Align.CENTER
+            canvas.drawText("x${hs.combo} COMBO", w / 2f, 120f, comboP)
+            comboP.textAlign = Paint.Align.RIGHT
         }
     }
 
@@ -234,13 +240,34 @@ class HUDView(context: Context, private val input: InputController) : View(conte
         canvas.drawCircle(bx, by, br, p); p.style = Paint.Style.FILL
         p.color = 0xCCFFFFFF.toInt()
         val path = android.graphics.Path()
-        path.moveTo(bx, by - 22f)
-        path.lineTo(bx - 16f, by + 8f)
-        path.lineTo(bx + 16f, by + 8f)
+        path.moveTo(bx, by - 24f)
+        path.lineTo(bx - 18f, by + 10f)
+        path.lineTo(bx + 18f, by + 10f)
         path.close()
         canvas.drawPath(path, p)
         tp.textSize = 16f; tp.color = 0xAAFFFFFF.toInt(); tp.textAlign = Paint.Align.CENTER
-        canvas.drawText("JUMP", bx, by + 26f, tp); tp.textAlign = Paint.Align.LEFT
+        canvas.drawText("JUMP", bx, by + 28f, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawWavePopup(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        val alpha = (hs.wavePopupTimer / 2.5f * 255).toInt().coerceIn(0, 255)
+        val scale = 1f + (1f - hs.wavePopupTimer / 2.5f) * 0.3f
+        val size = 68f * scale
+        tp.textSize = size; tp.color = Color.argb(alpha, 0, 229, 255); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("WAVE ${hs.wave}", w / 2f, h * 0.25f, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawWeaponSwitchPopup(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
+        val alpha = (hs.weaponSwitchPopupTimer / 1.5f * 255).toInt().coerceIn(0, 255)
+        tp.textSize = 32f; tp.color = Color.argb(alpha, 255, 255, 255); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText(hs.weaponSwitchPopup, w / 2f, h * 0.82f, tp); tp.textAlign = Paint.Align.LEFT
+    }
+
+    private fun drawLowHealthWarning(canvas: Canvas, w: Float, h: Float) {
+        val pulse = (sin(System.currentTimeMillis() / 300f) * 0.5f + 0.5f).coerceIn(0f, 1f)
+        val alpha = (pulse * 200).toInt()
+        tp.textSize = 28f; tp.color = Color.argb(alpha, 255, 23, 68); tp.textAlign = Paint.Align.CENTER
+        canvas.drawText("LOW HEALTH", w / 2f, h * 0.88f, tp); tp.textAlign = Paint.Align.LEFT
     }
 
     private fun drawDamageVignette(canvas: Canvas, w: Float, h: Float, amt: Float) {

@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 class SoundManager(private val ctx: Context) {
     private var pool: SoundPool? = null
-    private val ids = IntArray(12)
+    private val ids = IntArray(13)
     private var ready = false
 
     fun init() {
@@ -32,6 +32,7 @@ class SoundManager(private val ctx: Context) {
             ids[9] = gen("switch", tone(0.04f, 1600f, 0.25f))
             ids[10] = gen("headshot", headshotSfx())
             ids[11] = gen("reload", reloadSfx())
+            ids[12] = gen("reload_complete", tone(0.08f, 1800f, 0.3f))
             ready = true
         } catch (_: Exception) {}
     }

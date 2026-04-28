@@ -24,7 +24,7 @@ enum class SoundEvent {
     HIT_ENEMY, KILL_ENEMY, HEADSHOT,
     PICKUP_HEALTH, PICKUP_AMMO,
     PLAYER_HURT, WAVE_START, GAME_OVER,
-    WEAPON_SWITCH, RELOAD
+    WEAPON_SWITCH, RELOAD, RELOAD_COMPLETE
 }
 
 enum class EnemyType(
@@ -75,7 +75,7 @@ class Player {
     var velocityY = 0f; var isGrounded = true
     val weapons = arrayOf(
         Weapon("PISTOL", 22, 0.25f, 12, 1.2f, 0.015f, 38f, 1, 1f, 1f, 0.4f),
-        Weapon("SHOTGUN", 15, 0.8f, 6, 2.0f, 0.1f, 30f, 5, 1f, 0.7f, 0.25f),
+        Weapon("SHOTGUN", 18, 0.8f, 6, 2.0f, 0.1f, 30f, 5, 1f, 0.7f, 0.25f),
         Weapon("RIFLE", 11, 0.1f, 30, 1.8f, 0.035f, 48f, 1, 0.4f, 0.85f, 1f)
     )
     var currentWeapon = 0
@@ -236,5 +236,9 @@ data class HUDState(
     val arenaHalf: Float, val kills: Int,
     val soundEvents: List<SoundEvent>,
     val isSprinting: Boolean = false,
-    val headshots: Int = 0
+    val headshots: Int = 0,
+    val wavePopupTimer: Float = 0f,
+    val weaponSwitchPopup: String = "",
+    val weaponSwitchPopupTimer: Float = 0f,
+    val lowHealthWarning: Boolean = false
 )

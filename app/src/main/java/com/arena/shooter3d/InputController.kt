@@ -29,8 +29,10 @@ class InputController {
     var reloadBtnX = 0f; var reloadBtnY = 0f; val reloadBtnRadius = 65f
     var switchBtnX = 0f; var switchBtnY = 0f; val switchBtnRadius = 65f
     var pauseBtnX = 0f; var pauseBtnY = 0f; val pauseBtnRadius = 30f
-    var jumpBtnX = 0f; var jumpBtnY = 0f; val jumpBtnRadius = 75f
+    var jumpBtnX = 0f; var jumpBtnY = 0f; val jumpBtnRadius = 85f
     val joyOuterRadius = 120f; val joyInnerRadius = 45f
+
+    private var jumpPointerId = -1
 
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
@@ -43,7 +45,7 @@ class InputController {
 
     fun onTouchDown(pointerId: Int, x: Float, y: Float) {
         if (inCircle(x, y, jumpBtnX, jumpBtnY, jumpBtnRadius + 12f)) {
-            jumpTapped = true; return
+            jumpTapped = true; jumpPointerId = pointerId; return
         }
         if (inCircle(x, y, reloadBtnX, reloadBtnY, reloadBtnRadius + 12f)) {
             reloadTapped = true; return
@@ -100,6 +102,7 @@ class InputController {
             movePointerId -> { movePointerId = -1; joyX = 0f; joyY = 0f; joyActive = false; isSprinting = false }
             lookPointerId -> { lookPointerId = -1; lookDeltaX = 0f; lookDeltaY = 0f }
             firePointerId -> { firePointerId = -1; isFiring = false }
+            jumpPointerId -> { jumpPointerId = -1 }
         }
     }
 
@@ -110,7 +113,11 @@ class InputController {
     fun consumeWeaponSwitch(): Boolean { val t = weaponSwitchTapped; weaponSwitchTapped = false; return t }
     fun consumeReload(): Boolean { val t = reloadTapped; reloadTapped = false; return t }
     fun consumePause(): Boolean { val t = pauseTapped; pauseTapped = false; return t }
-    fun consumeJump(): Boolean { val t = jumpTapped; jumpTapped = false; return t }
+    fun consumeJump(): Boolean {
+        val t = jumpTapped || jumpPointerId != -1
+        jumpTapped = false
+        return t
+    }
 
     private fun inCircle(x: Float, y: Float, cx: Float, cy: Float, r: Float): Boolean {
         val dx = x - cx; val dy = y - cy; return dx * dx + dy * dy < r * r

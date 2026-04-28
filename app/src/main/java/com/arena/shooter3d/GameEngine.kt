@@ -22,6 +22,9 @@ class GameEngine {
     var isMoving = false
     var isSprinting = false
     var headshots = 0
+    var wavePopupTimer = 0f
+    var weaponSwitchPopup = ""
+    var weaponSwitchPopupTimer = 0f
 
     fun startGame() {
         player.reset(); enemies.clear(); projectiles.clear(); particles.clear(); floatingTexts.clear()
@@ -89,6 +92,7 @@ class GameEngine {
                 player.isReloading = false
                 player.reloadTimer = 0f
                 player.reloadDip = 0f
+                soundEvents.add(SoundEvent.RELOAD_COMPLETE)
             }
         }
 
@@ -96,6 +100,8 @@ class GameEngine {
             player.pendingWeapon = (player.currentWeapon + 1) % player.weapons.size
             player.swapPhase = 1; player.gunSwapProgress = 0f
             soundEvents.add(SoundEvent.WEAPON_SWITCH)
+            weaponSwitchPopup = player.weapons[player.pendingWeapon].name
+            weaponSwitchPopupTimer = 1.5f
         }
 
         if (input.consumeJump() && player.isGrounded) {
@@ -406,7 +412,7 @@ class GameEngine {
     private fun updateWaves(dt: Float) {
         if (enemies.count { it.state != EnemyState.DYING } == 0) {
             waveDelay -= dt
-            if (waveDelay <= 0f) { wave++; spawnWave(); waveDelay = 2.5f; soundEvents.add(SoundEvent.WAVE_START) }
+            if (waveDelay <= 0f) { wave++; spawnWave(); waveDelay = 2.5f; soundEvents.add(SoundEvent.WAVE_START); wavePopupTimer = 2.5f }
         }
     }
 
@@ -432,6 +438,8 @@ class GameEngine {
 
     private fun updateCombo(dt: Float) {
         if (comboTimer > 0f) { comboTimer -= dt; if (comboTimer <= 0f) combo = 0 }
+        if (wavePopupTimer > 0f) wavePopupTimer -= dt
+        if (weaponSwitchPopupTimer > 0f) weaponSwitchPopupTimer -= dt
     }
 
     private fun addScore(base: Int) {
@@ -497,6 +505,6 @@ class GameEngine {
             enemies.count { it.state != EnemyState.DYING },
             player.position.x, player.position.z, player.yaw,
             ep, pp, arena.half, player.kills, emptyList(),
-            isSprinting, headshots)
+            isSprinting, headshots, wavePopupTimer, weaponSwitchPopup, weaponSwitchPopupTimer, player.health < 20)
     }
 }
