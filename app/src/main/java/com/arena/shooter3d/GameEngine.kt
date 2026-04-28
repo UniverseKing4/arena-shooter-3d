@@ -374,6 +374,7 @@ class GameEngine {
                         }
                     }
                     PickupType.AMMO -> {
+                        player.reserve[0] = player.reserve[0] + 24
                         player.reserve[1] = player.reserve[1] + 18
                         player.reserve[2] = player.reserve[2] + 90
                         p.active = false; p.respawnTimer = 15f
