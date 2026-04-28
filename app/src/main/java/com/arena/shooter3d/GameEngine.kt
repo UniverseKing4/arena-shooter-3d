@@ -67,7 +67,7 @@ class GameEngine {
         player.yaw += ldx
         player.pitch = (player.pitch + ldy).coerceIn(-1.2f, 1.2f)
 
-        if (input.consumeReload() && !player.isReloading && player.swapPhase == 0) {
+        if ((input.consumeReload() || player.mag[player.currentWeapon] <= 0) && !player.isReloading && player.swapPhase == 0) {
             val w = player.weapon
             if (player.mag[player.currentWeapon] < w.magSize && player.reserve[player.currentWeapon] > 0) {
                 player.isReloading = true
@@ -374,8 +374,8 @@ class GameEngine {
                         }
                     }
                     PickupType.AMMO -> {
-                        player.reserve[1] = (player.reserve[1] + 18).coerceAtMost(64)
-                        player.reserve[2] = (player.reserve[2] + 90).coerceAtMost(300)
+                        player.reserve[1] = player.reserve[1] + 18
+                        player.reserve[2] = player.reserve[2] + 90
                         p.active = false; p.respawnTimer = 15f
                         soundEvents.add(SoundEvent.PICKUP_AMMO)
                         spawnPickupFX(p.position, p.type)

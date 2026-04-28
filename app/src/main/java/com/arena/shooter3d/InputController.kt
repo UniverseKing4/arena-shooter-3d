@@ -35,8 +35,8 @@ class InputController {
     fun setScreenSize(w: Int, h: Int) {
         screenW = w.toFloat(); screenH = h.toFloat()
         fireBtnX = screenW - 480f; fireBtnY = screenH - 340f
-        reloadBtnX = fireBtnX - 40f; reloadBtnY = fireBtnY - 200f
-        switchBtnX = reloadBtnX + 140f; switchBtnY = reloadBtnY
+        reloadBtnX = fireBtnX - 20f; reloadBtnY = fireBtnY + 200f
+        switchBtnX = reloadBtnX + 160f; switchBtnY = reloadBtnY
         jumpBtnX = fireBtnX + 240f; jumpBtnY = fireBtnY + 160f
         pauseBtnX = screenW - 55f; pauseBtnY = 55f
     }
@@ -80,7 +80,7 @@ class InputController {
                     joyX = dx / joyOuterRadius; joyY = dy / joyOuterRadius
                     joyThumbX = x; joyThumbY = y
                 }
-                isSprinting = dy < -(joyOuterRadius * 2f)
+                isSprinting = dy < -(joyOuterRadius * 3f)
             }
             lookPointerId -> {
                 lookDeltaX += (x - lastLookX) * lookSensitivity
