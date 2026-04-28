@@ -265,8 +265,8 @@ class HUDView(context: Context, private val input: InputController) : View(conte
 
     private fun drawLowHealthWarning(canvas: Canvas, w: Float, h: Float) {
         val t = (System.currentTimeMillis() % 1885).toFloat() / 300f
-        val pulse = sin(t) * 0.35f + 0.65f
-        val alpha = (pulse * 230).toInt().coerceIn(70, 230)
+        val pulse = sin(t) * 0.2f + 0.8f
+        val alpha = (pulse * 240).toInt().coerceIn(150, 240)
         tp.textSize = 28f; tp.color = Color.argb(alpha, 255, 23, 68); tp.textAlign = Paint.Align.CENTER
         canvas.drawText("LOW HEALTH", w / 2f, h * 0.88f, tp); tp.textAlign = Paint.Align.LEFT
     }

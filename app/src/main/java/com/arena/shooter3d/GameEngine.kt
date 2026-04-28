@@ -359,7 +359,7 @@ class GameEngine {
                 EnemyState.ATTACK -> {
                     e.stateTimer -= dt
                     if (e.stateTimer <= 0f) {
-                        if (player.position.distTo(e.position) < e.type.attackRange + 0.5f) {
+                        if (player.position.distTo(e.position) < e.type.attackRange + 0.5f && player.position.y < 0.5f) {
                             player.health -= e.type.damage
                             player.damageFlash = 1f; player.screenShake = 0.5f
                             soundEvents.add(SoundEvent.PLAYER_HURT)
