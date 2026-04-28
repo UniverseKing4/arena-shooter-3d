@@ -8,5 +8,5 @@
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#B0BEC5</color>
     <color name="divider">#1A237E</color>
-    <color name="ic_launcher_background">#D50000</color>
+    <color name="ic_launcher_background">#000000</color>
 </resources>

@@ -35,15 +35,158 @@ class HUDView(context: Context, private val input: InputController) : View(conte
     }
 
     private fun drawMenu(canvas: Canvas, w: Float, h: Float, hs: HUDState) {
-        p.color = 0xDD0A0A1A.toInt(); canvas.drawRect(0f, 0f, w, h, p)
-        titleP.textSize = 72f; titleP.color = 0xFFFF1744.toInt()
-        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.32f, titleP)
-        subP.color = Color.WHITE; subP.textSize = 30f
-        canvas.drawText("TAP TO START", w / 2, h * 0.52f, subP)
-        if (hs.highScore > 0) { subP.color = 0xFF00E5FF.toInt(); canvas.drawText("HIGH SCORE: ${hs.highScore}", w / 2, h * 0.64f, subP) }
-        subP.color = 0xFF777777.toInt(); subP.textSize = 22f
-        canvas.drawText("LEFT JOYSTICK: MOVE  |  RIGHT SIDE: AIM  |  FIRE BUTTON: SHOOT", w / 2, h * 0.82f, subP)
-        subP.textSize = 30f
+        val time = System.currentTimeMillis()
+        val t = (time % 10000).toFloat() / 10000f
+        val slowT = (time % 4000).toFloat() / 4000f
+        val fastT = (time % 1500).toFloat() / 1500f
+
+        // Dark gradient background
+        p.color = 0xFF050510.toInt(); canvas.drawRect(0f, 0f, w, h, p)
+
+        // Animated grid lines
+        p.color = 0x15FF1744.toInt(); p.strokeWidth = 1f; p.style = Paint.Style.STROKE
+        val gridSize = 80f; val offsetX = (t * gridSize) % gridSize; val offsetY = (t * gridSize * 0.7f) % gridSize
+        var gx = -gridSize + offsetX; while (gx < w + gridSize) { canvas.drawLine(gx, 0f, gx, h, p); gx += gridSize }
+        var gy = -gridSize + offsetY; while (gy < h + gridSize) { canvas.drawLine(0f, gy, w, gy, p); gy += gridSize }
+        p.style = Paint.Style.FILL
+
+        // Animated floating particles
+        for (i in 0 until 18) {
+            val px = ((sin((t + i * 0.37f) * 6.28f) * 0.4f + 0.5f) * w)
+            val py = ((cos((t + i * 0.53f) * 6.28f) * 0.4f + 0.5f) * h)
+            val pa = (sin((t + i * 0.2f) * 6.28f) * 0.5f + 0.5f)
+            val ps = 2f + sin((t + i * 0.6f) * 6.28f) * 1.5f
+            p.color = Color.argb((pa * 90).toInt(), 255, 23, 68)
+            canvas.drawCircle(px, py, ps, p)
+        }
+
+        // Subtle red vignette glow at edges
+        val vigAlpha = (sin(slowT * 6.28f) * 20 + 30).toInt().coerceIn(10, 50)
+        val vigColor = Color.argb(vigAlpha, 255, 23, 68)
+        val vigClear = Color.argb(0, 255, 23, 68)
+        val edgeW = w * 0.25f
+        p.shader = LinearGradient(0f, 0f, edgeW, 0f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, 0f, edgeW, h, p)
+        p.shader = LinearGradient(w, 0f, w - edgeW, 0f, vigColor, vigClear, android.graphics.Shader.TileMode.CLAMP)
+        canvas.drawRect(w - edgeW, 0f, w, h, p)
+        p.shader = null
+
+        // Top decorative lines
+        p.color = 0x44FF1744.toInt(); p.strokeWidth = 2f; p.style = Paint.Style.STROKE
+        val lineW = w * 0.35f
+        canvas.drawLine(w / 2 - lineW, h * 0.14f, w / 2 + lineW, h * 0.14f, p)
+        canvas.drawLine(w / 2 - lineW * 0.6f, h * 0.16f, w / 2 + lineW * 0.6f, h * 0.16f, p)
+        p.style = Paint.Style.FILL
+
+        // Game title with glow effect
+        val titleGlow = (sin(slowT * 6.28f) * 0.15f + 0.85f)
+        titleP.textSize = 56f; titleP.color = Color.argb((titleGlow * 40).toInt(), 255, 23, 68)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.26f + 2f, titleP)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2 + 1f, h * 0.26f + 1f, titleP)
+        titleP.color = Color.argb((titleGlow * 255).toInt(), 255, 23, 68)
+        canvas.drawText("ARENA SHOOTER 3D", w / 2, h * 0.26f, titleP)
+
+        // Subtitle
+        subP.textSize = 18f; subP.color = 0x99B0BEC5.toInt()
+        canvas.drawText("SURVIVE THE ARENA", w / 2, h * 0.32f, subP)
+
+        // Animated crosshair behind play button
+        val cx = w / 2f; val cy = h * 0.54f
+        val crossRot = t * 360f
+        val crossAlpha = (sin(fastT * 6.28f) * 30 + 50).toInt().coerceIn(20, 80)
+        p.color = Color.argb(crossAlpha, 255, 23, 68); p.strokeWidth = 1.5f; p.style = Paint.Style.STROKE
+        val outerR = 95f
+        canvas.drawCircle(cx, cy, outerR, p)
+        p.style = Paint.Style.FILL
+
+        // Rotating tick marks around play button
+        p.color = Color.argb(60, 255, 23, 68); p.strokeWidth = 2f; p.style = Paint.Style.STROKE
+        for (i in 0 until 12) {
+            val angle = (i * 30f + crossRot) * (PI.toFloat() / 180f)
+            val r1 = outerR + 5f; val r2 = outerR + 12f
+            canvas.drawLine(cx + cos(angle) * r1, cy + sin(angle) * r1, cx + cos(angle) * r2, cy + sin(angle) * r2, p)
+        }
+        p.style = Paint.Style.FILL
+
+        // Play button - pulsing circle with triangle
+        val btnR = 72f
+        val pulse = sin(fastT * 6.28f) * 0.08f + 1f
+        val btnRPulsed = btnR * pulse
+
+        // Button glow
+        p.color = Color.argb(40, 255, 23, 68)
+        canvas.drawCircle(cx, cy, btnRPulsed + 14f, p)
+        p.color = Color.argb(60, 255, 23, 68)
+        canvas.drawCircle(cx, cy, btnRPulsed + 6f, p)
+
+        // Button fill
+        p.color = 0xDDFF1744.toInt()
+        canvas.drawCircle(cx, cy, btnRPulsed, p)
+
+        // Button inner highlight
+        p.color = 0x33FFFFFF.toInt()
+        canvas.drawCircle(cx, cy - 8f, btnRPulsed * 0.6f, p)
+
+        // Button border
+        p.color = 0xFFFFFFFF.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 3.5f
+        canvas.drawCircle(cx, cy, btnRPulsed, p)
+        p.style = Paint.Style.FILL
+
+        // Play triangle
+        p.color = 0xFFFFFFFF.toInt()
+        val triSize = 32f
+        val path = android.graphics.Path()
+        path.moveTo(cx - triSize * 0.4f, cy - triSize)
+        path.lineTo(cx + triSize * 0.9f, cy)
+        path.lineTo(cx - triSize * 0.4f, cy + triSize)
+        path.close()
+        canvas.drawPath(path, p)
+
+        // "PLAY" text below button
+        subP.textSize = 24f; subP.color = 0xCCFFFFFF.toInt()
+        canvas.drawText("PLAY", cx, cy + btnRPulsed + 34f, subP)
+
+        // High score display
+        if (hs.highScore > 0) {
+            val hsY = h * 0.78f
+            // Background panel
+            p.color = 0x33000000.toInt()
+            canvas.drawRoundRect(w / 2 - 150f, hsY - 30f, w / 2 + 150f, hsY + 20f, 10f, 10f, p)
+            p.color = 0x44FF1744.toInt(); p.style = Paint.Style.STROKE; p.strokeWidth = 1.5f
+            canvas.drawRoundRect(w / 2 - 150f, hsY - 30f, w / 2 + 150f, hsY + 20f, 10f, 10f, p)
+            p.style = Paint.Style.FILL
+
+            // Trophy icon (small diamond)
+            p.color = 0xFFFFC107.toInt()
+            val tPath = android.graphics.Path()
+            tPath.moveTo(w / 2 - 95f, hsY - 5f)
+            tPath.lineTo(w / 2 - 85f, hsY - 15f)
+            tPath.lineTo(w / 2 - 75f, hsY - 5f)
+            tPath.lineTo(w / 2 - 85f, hsY + 5f)
+            tPath.close()
+            canvas.drawPath(tPath, p)
+
+            subP.textSize = 20f; subP.color = 0xFFB0BEC5.toInt(); subP.textAlign = Paint.Align.LEFT
+            canvas.drawText("HIGH SCORE", w / 2 - 65f, hsY - 4f, subP)
+            subP.textAlign = Paint.Align.RIGHT; subP.color = 0xFF00E5FF.toInt(); subP.textSize = 24f
+            canvas.drawText("${hs.highScore}", w / 2 + 135f, hsY - 2f, subP)
+            subP.textAlign = Paint.Align.CENTER
+        }
+
+        // Controls hint at bottom
+        val ctrlY = h * 0.92f
+        p.color = 0x22FFFFFF.toInt()
+        canvas.drawRoundRect(w / 2 - 320f, ctrlY - 18f, w / 2 + 320f, ctrlY + 14f, 8f, 8f, p)
+        subP.color = 0x88FFFFFF.toInt(); subP.textSize = 16f
+        canvas.drawText("JOYSTICK: MOVE  |  DRAG: AIM  |  FIRE: SHOOT  |  JUMP  |  RELOAD", w / 2, ctrlY + 5f, subP)
+
+        // Bottom decorative line
+        p.color = 0x33FF1744.toInt(); p.strokeWidth = 1.5f; p.style = Paint.Style.STROKE
+        canvas.drawLine(w * 0.2f, h * 0.97f, w * 0.8f, h * 0.97f, p)
+        p.style = Paint.Style.FILL
+
+        // Force continuous redraw for animations
+        postInvalidate()
     }
 
     private fun drawPlaying(canvas: Canvas, w: Float, h: Float, hs: HUDState) {

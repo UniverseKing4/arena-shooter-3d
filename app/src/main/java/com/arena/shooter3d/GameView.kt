@@ -51,7 +51,15 @@ class GameView(
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 when (engine.gameState) {
-                    GameState.MENU -> { engine.startGame(); return true }
+                    GameState.MENU -> {
+                        val btnX = width / 2f; val btnY = height * 0.54f
+                        val btnR = 72f
+                        val dx = x - btnX; val dy = y - btnY
+                        if (dx * dx + dy * dy < (btnR + 20f) * (btnR + 20f)) {
+                            engine.startGame()
+                        }
+                        return true
+                    }
                     GameState.GAME_OVER -> {
                         val btnX = width / 2f; val btnY = height * 0.74f
                         val btnW = 220f; val btnH = 60f

@@ -5,74 +5,103 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Crosshair center circle -->
+    <!-- Outer scope ring -->
     <path
-        android:pathData="M54,54m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0"
-        android:strokeWidth="3"
+        android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
+        android:strokeWidth="1.8"
+        android:strokeColor="#44FF1744"
+        android:fillColor="#00000000" />
+
+    <!-- Inner crosshair circle -->
+    <path
+        android:pathData="M54,54m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0"
+        android:strokeWidth="2.8"
         android:strokeColor="#FF1744"
         android:fillColor="#00000000" />
 
-    <!-- Crosshair center dot -->
+    <!-- Center dot -->
     <path
-        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:pathData="M54,54m-3.5,0a3.5,3.5 0,1 1,7 0a3.5,3.5 0,1 1,-7 0"
         android:fillColor="#FF1744" />
 
-    <!-- Crosshair horizontal line left -->
+    <!-- Crosshair line left -->
     <path
-        android:pathData="M28,54L38,54"
-        android:strokeWidth="2.5"
+        android:pathData="M24,54L40,54"
+        android:strokeWidth="2.8"
         android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Crosshair horizontal line right -->
+    <!-- Crosshair line right -->
     <path
-        android:pathData="M70,54L80,54"
-        android:strokeWidth="2.5"
+        android:pathData="M68,54L84,54"
+        android:strokeWidth="2.8"
         android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Crosshair vertical line top -->
+    <!-- Crosshair line top -->
     <path
-        android:pathData="M54,28L54,38"
-        android:strokeWidth="2.5"
+        android:pathData="M54,24L54,40"
+        android:strokeWidth="2.8"
         android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Crosshair vertical line bottom -->
+    <!-- Crosshair line bottom -->
     <path
-        android:pathData="M54,70L54,80"
-        android:strokeWidth="2.5"
+        android:pathData="M54,68L54,84"
+        android:strokeWidth="2.8"
         android:strokeColor="#FF1744"
         android:strokeLineCap="round" />
 
-    <!-- Corner bracket top-left (inward facing) -->
+    <!-- Tick marks on outer ring - diagonal positions -->
     <path
-        android:pathData="M30,30L30,38M30,30L38,30"
-        android:strokeWidth="3"
+        android:pathData="M34.2,34.2L36.5,36.5"
+        android:strokeWidth="1.5"
+        android:strokeColor="#88FF1744"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M73.8,34.2L71.5,36.5"
+        android:strokeWidth="1.5"
+        android:strokeColor="#88FF1744"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M34.2,73.8L36.5,71.5"
+        android:strokeWidth="1.5"
+        android:strokeColor="#88FF1744"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M73.8,73.8L71.5,71.5"
+        android:strokeWidth="1.5"
+        android:strokeColor="#88FF1744"
+        android:strokeLineCap="round" />
+
+    <!-- Corner bracket top-left -->
+    <path
+        android:pathData="M28,28L28,37M28,28L37,28"
+        android:strokeWidth="3.2"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner bracket top-right (inward facing) -->
+    <!-- Corner bracket top-right -->
     <path
-        android:pathData="M78,30L78,38M78,30L70,30"
-        android:strokeWidth="3"
+        android:pathData="M80,28L80,37M80,28L71,28"
+        android:strokeWidth="3.2"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner bracket bottom-left (inward facing) -->
+    <!-- Corner bracket bottom-left -->
     <path
-        android:pathData="M30,78L30,70M30,78L38,78"
-        android:strokeWidth="3"
+        android:pathData="M28,80L28,71M28,80L37,80"
+        android:strokeWidth="3.2"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
 
-    <!-- Corner bracket bottom-right (inward facing) -->
+    <!-- Corner bracket bottom-right -->
     <path
-        android:pathData="M78,78L78,70M78,78L70,78"
-        android:strokeWidth="3"
+        android:pathData="M80,80L80,71M80,80L71,80"
+        android:strokeWidth="3.2"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
