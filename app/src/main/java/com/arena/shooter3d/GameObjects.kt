@@ -82,6 +82,7 @@ class Player {
     var mag = intArrayOf(12, 6, 30)
     var reserve = intArrayOf(999, 24, 120)
     var isReloading = false; var reloadTimer = 0f; var reloadDuration = 0f
+    var reloadingWeapon = -1
     var fireCooldown = 0f
     var damageFlash = 0f; var screenShake = 0f; var kills = 0
 
@@ -107,7 +108,7 @@ class Player {
         position = Vec3(0f, 0f, 0f); yaw = 0f; pitch = 0f
         health = maxHealth; currentWeapon = 0
         mag = intArrayOf(12, 6, 30); reserve = intArrayOf(999, 24, 120)
-        isReloading = false; reloadTimer = 0f; reloadDuration = 0f
+        isReloading = false; reloadTimer = 0f; reloadDuration = 0f; reloadingWeapon = -1
         fireCooldown = 0f; damageFlash = 0f; screenShake = 0f; kills = 0
         gunRecoil = 0f; gunSwapProgress = 0f; gunBobPhase = 0f
         swapPhase = 0; pendingWeapon = -1; muzzleFlash = 0f; reloadDip = 0f

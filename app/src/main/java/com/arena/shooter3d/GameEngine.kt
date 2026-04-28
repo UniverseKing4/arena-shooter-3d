@@ -14,6 +14,7 @@ class GameEngine {
     var gameState = GameState.MENU
     var score = 0; var highScore = 0; var wave = 0
     var combo = 0; var comboTimer = 0f
+    var onHighScoreChanged: ((Int) -> Unit)? = null
     private var waveDelay = 0f
     private val moveSpeed = 6.5f
     private val sprintMultiplier = 1.7f
@@ -59,7 +60,10 @@ class GameEngine {
 
         if (player.health <= 0) {
             gameState = GameState.GAME_OVER
-            if (score > highScore) highScore = score
+            if (score > highScore) {
+                highScore = score
+                onHighScoreChanged?.invoke(highScore)
+            }
             soundEvents.add(SoundEvent.GAME_OVER)
             spawnBurst(player.position.x, player.eyeY, player.position.z, 1f, 0.3f, 0.3f, 30)
         }
@@ -74,6 +78,7 @@ class GameEngine {
             val w = player.weapon
             if (player.mag[player.currentWeapon] < w.magSize && player.reserve[player.currentWeapon] > 0) {
                 player.isReloading = true
+                player.reloadingWeapon = player.currentWeapon
                 player.reloadTimer = 0f
                 player.reloadDuration = w.reloadTime
                 soundEvents.add(SoundEvent.RELOAD)
@@ -82,21 +87,24 @@ class GameEngine {
 
         if (player.isReloading) {
             player.reloadTimer += dt
-            player.reloadDip = sin(player.reloadTimer / player.reloadDuration * PI.toFloat()) * 0.3f
+            if (player.reloadingWeapon == player.currentWeapon) {
+                player.reloadDip = sin(player.reloadTimer / player.reloadDuration * PI.toFloat()) * 0.3f
+            }
             if (player.reloadTimer >= player.reloadDuration) {
-                val w = player.weapon
-                val needed = w.magSize - player.mag[player.currentWeapon]
-                val toReload = needed.coerceAtMost(player.reserve[player.currentWeapon])
-                player.mag[player.currentWeapon] += toReload
-                player.reserve[player.currentWeapon] -= toReload
+                val w = player.weapons[player.reloadingWeapon]
+                val needed = w.magSize - player.mag[player.reloadingWeapon]
+                val toReload = needed.coerceAtMost(player.reserve[player.reloadingWeapon])
+                player.mag[player.reloadingWeapon] += toReload
+                player.reserve[player.reloadingWeapon] -= toReload
                 player.isReloading = false
                 player.reloadTimer = 0f
                 player.reloadDip = 0f
+                player.reloadingWeapon = -1
                 soundEvents.add(SoundEvent.RELOAD_COMPLETE)
             }
         }
 
-        if (input.consumeWeaponSwitch() && player.swapPhase == 0 && !player.isReloading) {
+        if (input.consumeWeaponSwitch() && player.swapPhase == 0) {
             player.pendingWeapon = (player.currentWeapon + 1) % player.weapons.size
             player.swapPhase = 1; player.gunSwapProgress = 0f
             soundEvents.add(SoundEvent.WEAPON_SWITCH)
@@ -249,8 +257,8 @@ class GameEngine {
                         if (isHeadshot) {
                             soundEvents.add(SoundEvent.HEADSHOT)
                             headshots++
-                            spawnBurst(nx, ny, nz, 1f, 0.85f, 0.15f, 12)
-                            floatingTexts.add(FloatingText(e.position.x, s * 1.5f, e.position.z, "HEADSHOT!", 1.2f, 1f, 0.85f, 0.15f))
+                            spawnBurst(nx, ny, nz, 1f, 0.85f, 0.15f, 18)
+                            floatingTexts.add(FloatingText(e.position.x, s * 1.5f, e.position.z, "HEADSHOT!", 1.5f, 1f, 0.85f, 0.15f))
                         } else {
                             soundEvents.add(SoundEvent.HIT_ENEMY)
                             spawnBurst(nx, ny, nz, 0.8f, 0.15f, 0.1f, 5)
@@ -505,6 +513,6 @@ class GameEngine {
             enemies.count { it.state != EnemyState.DYING },
             player.position.x, player.position.z, player.yaw,
             ep, pp, arena.half, player.kills, emptyList(),
-            isSprinting, headshots, wavePopupTimer, weaponSwitchPopup, weaponSwitchPopupTimer, player.health < 20)
+            isSprinting, headshots, wavePopupTimer, weaponSwitchPopup, weaponSwitchPopupTimer, player.health <= 30)
     }
 }

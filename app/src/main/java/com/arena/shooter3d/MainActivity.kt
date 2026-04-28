@@ -1,5 +1,6 @@
 package com.arena.shooter3d
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -19,6 +20,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val prefs = getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+        engine.highScore = prefs.getInt("high_score", 0)
+        engine.onHighScoreChanged = { newHighScore ->
+            prefs.edit().putInt("high_score", newHighScore).apply()
+        }
+
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideSystemUI()

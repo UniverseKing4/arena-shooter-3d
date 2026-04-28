@@ -32,7 +32,7 @@ class SoundManager(private val ctx: Context) {
             ids[9] = gen("switch", tone(0.04f, 1600f, 0.25f))
             ids[10] = gen("headshot", headshotSfx())
             ids[11] = gen("reload", reloadSfx())
-            ids[12] = gen("reload_complete", tone(0.08f, 1800f, 0.3f))
+            ids[12] = gen("reload_complete", reloadCompleteSfx())
             ready = true
         } catch (_: Exception) {}
     }
@@ -135,6 +135,17 @@ class SoundManager(private val ctx: Context) {
             val click2 = if (p > 0.6f) { val sp = (p - 0.6f) / 0.4f; sin(2f * PI.toFloat() * 1200f * t) * (1f - sp).pow(2f) * 0.5f } else 0f
             val metal = (Random.nextFloat() * 2f - 1f) * 0.08f * (1f - p)
             o[i] = ((click1 + slide + click2 + metal) * 0.8f * 30000).toInt().coerceIn(-32768, 32767).toShort()
+        }; return o
+    }
+
+    private fun reloadCompleteSfx(): ShortArray {
+        val r = 22050; val dur = 0.25f; val n = (r * dur).toInt(); val o = ShortArray(n)
+        for (i in 0 until n) { val t = i.toFloat() / r; val p = t / dur
+            val snap = if (p < 0.12f) sin(2f * PI.toFloat() * 1400f * t) * (1f - p / 0.12f).pow(2f) * 0.6f else 0f
+            val click = if (p in 0.12f..0.25f) { val sp = (p - 0.12f) / 0.13f; sin(2f * PI.toFloat() * 1800f * t) * (1f - sp).pow(1.5f) * 0.5f } else 0f
+            val lock = if (p > 0.25f) { val sp = (p - 0.25f) / 0.75f; sin(2f * PI.toFloat() * 2200f * t) * (1f - sp).pow(2f) * 0.4f } else 0f
+            val metallic = (Random.nextFloat() * 2f - 1f) * 0.06f * (1f - p).pow(2f)
+            o[i] = ((snap + click + lock + metallic) * 0.85f * 30000).toInt().coerceIn(-32768, 32767).toShort()
         }; return o
     }
 
